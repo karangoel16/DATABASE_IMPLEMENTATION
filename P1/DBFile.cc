@@ -7,8 +7,6 @@
 #include "DBFile.h"
 #include "Defs.h"
 #include <iostream>
-#include <queue>
-#include "heapfile.cpp"
 
 // stub file .. replace it with your own DBFile.cc
 using namespace std;
@@ -32,10 +30,12 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
         case tree: 
         default: std::cout<<"The mode has not been implemented"<<endl;
     }
-    //file.GetPage(&page,0);
     return 0;
 }
 
+/*
+    This is done to bulk load all the records in the database
+*/
 void DBFile::Load (Schema &f_schema, const char *loadpath) {
     FILE * fileLoad = fopen(loadpath,"r");
     if(!fileLoad)
@@ -48,7 +48,7 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
     Record pull;
     while(pull.SuckNextRecord(&f_schema,fileLoad))
     {
-        pull.Print(&f_schema);
+        Add(pull);
     }
 }
 
@@ -84,8 +84,9 @@ void DBFile::Add (Record &rec) {
         writePage.Append(&rec);
     }
 }
-
+//TODO this function needs to be done and yet has not been completed
 int DBFile::GetNext (Record &fetchme) {
+    
     return 1;
 }
 

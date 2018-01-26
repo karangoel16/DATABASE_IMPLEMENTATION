@@ -24,27 +24,19 @@ TEST (DB_FILE,create) {
         string tbl_path=tpch_dir+i->name()+".tbl";
         FILE *tableFile = fopen (&tbl_path[0u], "r");
         cout << " tpch file will be loaded from " << tbl_path << endl;
-        //dbfile.Load (*(i->schema ()), &tbl_path[0u]);
+        dbfile.Load (*(i->schema ()), &tbl_path[0u]);
         Record temp;
-        Schema mySchema ("catalog", i->name());
+        /*Schema mySchema ("catalog", i->name());
         while(temp.SuckNextRecord(&mySchema,tableFile)){
             #ifdef verbose
                 temp.Print(&mySchema);
             #endif
             dbfile.Add(temp);
-        }
+        }*/
         ASSERT_EQ(dbfile.Close (),1);
     }
 }
-TEST(READ_FILE,read_file)
-{
-    DBFile dbfile;
-    for(auto i:rel_ptr)
-    {
-        string tbl_path=tpch_dir+i->name()+".tbl";
-        dbfile.Load (*(i->schema ()), &tbl_path[0u]);
-    }
-}
+
 // sequential scan of a DBfile 
 /*
 void test2 () {
