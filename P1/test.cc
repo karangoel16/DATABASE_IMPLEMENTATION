@@ -16,16 +16,10 @@ using namespace std;
 
 relation *rel;
 vector<relation *> rel_ptr;
-
-TEST(REL_pointer, check)
-{
-    ASSERT_EQ(rel_ptr.size(),7);
-}
 TEST (DB_FILE,create) {
-
-	DBFile dbfile;
     for (auto i:rel_ptr)
     {
+        DBFile dbfile;
 	    ASSERT_EQ(dbfile.Create (i->path(), heap, NULL),1);
         string tbl_path=tpch_dir+i->name()+".tbl";
         FILE *tableFile = fopen (&tbl_path[0u], "r");
@@ -34,16 +28,21 @@ TEST (DB_FILE,create) {
         Record temp;
         Schema mySchema ("catalog", i->name());
         while(temp.SuckNextRecord(&mySchema,tableFile)){
+            #ifdef verbose
+                temp.Print(&mySchema);
+            #endif
             dbfile.Add(temp);
         }
-        dbfile.Close ();
+        ASSERT_EQ(dbfile.Close (),1);
     }
 }
 TEST(READ_FILE,read_file)
 {
+    DBFile dbfile;
     for(auto i:rel_ptr)
     {
         string tbl_path=tpch_dir+i->name()+".tbl";
+        dbfile.Load (*(i->schema ()), &tbl_path[0u]);
     }
 }
 // sequential scan of a DBfile 
@@ -99,7 +98,8 @@ int main(int argc, char* argv[]){
 
 	setup (catalog_path, dbfile_dir, tpch_dir.c_str());
 	rel_ptr = {n, r, c, p, ps, o, li};
-	/*void (*test_ptr[]) () = {&test1, &test2, &test3};  
+	//rel_ptr= {r};
+    /*void (*test_ptr[]) () = {&test1, &test2, &test3};  
 
 	int tindx = 0;
 	while (tindx < 1 || tindx > 3) {

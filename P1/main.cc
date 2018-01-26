@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include "Record.h"
+#include "File.h"
 #include <stdlib.h>
 using namespace std;
 
@@ -43,17 +44,31 @@ int main () {
         // read in all of the records from the text file and see if they match
 	// the CNF expression that was typed in
 	int counter = 0;
+	File file;
+	Page page;
+	file.Open(0,"hi");
+	file.AddPage(&page,0);
+	int i=0;
 	ComparisonEngine comp;
-        while (temp.SuckNextRecord (&mySchema, tableFile) == 1) {
-		counter++;
-		if (counter % 10000 == 0) {
-			cerr << counter << "\n";
-		}
-
-		if (comp.Compare (&temp, &literal, &myComparison))
-                	temp.Print (&mySchema);
-
+        while (temp.SuckNextRecord (&mySchema, tableFile) == 1) 
+		{
+			counter++;
+			if (counter % 10000 == 0) {
+				cerr << counter << "\n";
+			}
+			if (comp.Compare (&temp, &literal, &myComparison))
+                temp.Print (&mySchema);
+			if(!page.Append(&temp))
+			{
+				std::cout<<i<<"\n";
+				i++;
+				std::cout<<"Page Increased";
+				file.AddPage(&page,i);
+				page.Append(&temp);
+			}
         }
+		file.Close();
+		
 
 }
 

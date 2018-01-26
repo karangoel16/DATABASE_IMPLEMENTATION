@@ -15,7 +15,10 @@ typedef enum {heap, sorted, tree} fType;
 class DBFile {
 private:
 	File file;
-	Page page;
+	Page writePage;
+	Page readPage;
+	int currentPage;
+	bool openFile;
 public:
 	DBFile (); 
 
@@ -29,6 +32,6 @@ public:
 	void Add (Record &addme);
 	int GetNext (Record &fetchme);
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
-
+	int Genlength();
 };
 #endif
