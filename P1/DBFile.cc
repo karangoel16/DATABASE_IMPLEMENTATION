@@ -20,11 +20,13 @@ DBFile::DBFile () {
 //return 0 of failure and 1 and on success
 int DBFile::Create (const char *f_path, fType f_type, void *startup) {
     openFile=true;
+    metaData = MetaStruct(f_path,f_type,0);
     switch(f_type)
     {
         case heap:
                 file.Open(0,const_cast<char*>(f_path));
                 std::cout<<file.GetLength()<<"\n";
+
                 return 1;
         case sorted:
         case tree: 

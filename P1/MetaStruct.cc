@@ -13,15 +13,26 @@
 using namespace std;
 
 
-MetaStruct::MetaStruct () {
-    mode = heap;
-    numRecords =0;
+MetaStruct::MetaStruct (const char *fPath, fType m, int n) {
+    mode = m;
+    numPages = n;
+    mPath = string(fPath) + ".meta";
+    cout << mPath;
 }
 
-int MetaStruct::Open (const char *fpath) {
+MetaStruct::MetaStruct () {
+
+}
+
+
+int MetaStruct::Open () {
 
 } 
 
 int MetaStruct::Close () {
+
+}
+
+void MetaStruct::incPage () {
 
 }

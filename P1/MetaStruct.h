@@ -7,17 +7,24 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+#include<string>
 
 typedef enum {heap, sorted, tree} fType;
 
 class MetaStruct {
+
 private:
 	fType mode;
-	int numRecords;
+	int numPages;
+    string mPath;
 public:
-	MetaStruct (); 
+    MetaStruct ();
+	MetaStruct (const char *fpath, fType m=heap, int n=0); 
 
-	int Open (const char *fpath);
+
+	int Open ();
 	int Close ();
+    void incPage();
+    void setMode();
 };
 #endif

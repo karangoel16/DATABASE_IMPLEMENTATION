@@ -7,8 +7,7 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
-
-typedef enum {heap, sorted, tree} fType;
+#include "MetaStruct.h"
 
 // stub DBFile header..replace it with your own DBFile.h 
 
@@ -19,6 +18,7 @@ private:
 	Page readPage;
 	int currentPage;
 	bool openFile;
+	MetaStruct metaData;
 public:
 	DBFile (); 
 
