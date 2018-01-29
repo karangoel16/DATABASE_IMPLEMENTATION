@@ -20,13 +20,12 @@ DBFile::DBFile () {
 //return 0 of failure and 1 and on success
 int DBFile::Create (const char *f_path, fType f_type, void *startup) {
     openFile=true;
-    metaData = MetaStruct(f_path,f_type,0);
+    metaData=MetaStruct(f_path);
     switch(f_type)
     {
         case heap:
                 file.Open(0,const_cast<char*>(f_path));
                 std::cout<<file.GetLength()<<"\n";
-
                 return 1;
         case sorted:
         case tree: 
@@ -43,7 +42,7 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
     if(!fileLoad)
     {
         #ifdef verbose
-            std::cout<<"File "+ loadpath+" could not be opened";
+            std::cout<<"File could not be opened";
             exit(1);
         #endif
     }
@@ -62,7 +61,6 @@ int DBFile::Open (const char *f_path) {
 }
 
 void DBFile::MoveFirst () {
-    
 }
 //1 if it is successfully closed and 0 if it is not
 int DBFile::Close () {
@@ -74,6 +72,7 @@ int DBFile::Close () {
     file.AddPage(&writePage, pos);
     writePage.EmptyItOut();       
     file.Close();
+    metaData.Close();
     return 1;
 }
 
@@ -82,13 +81,19 @@ void DBFile::Add (Record &rec) {
     {
         int pos = file.GetLength()==0? 0:file.GetLength()-1; 
         file.AddPage(&writePage,pos);
+        metaData.incPage();
         writePage.EmptyItOut();
         writePage.Append(&rec);
     }
 }
 //TODO this function needs to be done and yet has not been completed
 int DBFile::GetNext (Record &fetchme) {
-    
+    /*
+    while(dbfile.GetPage(&readPage))
+    {
+        if(currentPage)
+    }
+    */
     return 1;
 }
 
