@@ -23,7 +23,7 @@ TEST (DB_FILE,create) {
 	    ASSERT_EQ(dbfile.Create (i->path(), heap, NULL),1);
         string tbl_path=tpch_dir+i->name()+".tbl";
         FILE *tableFile = fopen (&tbl_path[0u], "r");
-        cout << " tpch file will be loaded from " << tbl_path << endl;
+        //cout << " tpch file will be loaded from " << tbl_path << endl;
         dbfile.Load (*(i->schema ()), &tbl_path[0u]);
         Record temp;
         /*Schema mySchema ("catalog", i->name());
@@ -37,6 +37,22 @@ TEST (DB_FILE,create) {
     }
 }
 
+TEST (DBFile, read)
+{
+	for(auto i:rel_ptr)
+	{
+		Record temp;
+		DBFile dbfile;
+		dbfile.Open(i->path());
+		int counter=0;
+		//std::cout<<"hello";
+		while(dbfile.GetNext(temp))
+		{
+				temp.Print(i->schema());
+		}
+		dbfile.Close();
+	}
+}
 // sequential scan of a DBfile 
 /*
 void test2 () {

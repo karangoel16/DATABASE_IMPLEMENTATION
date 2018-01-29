@@ -55,7 +55,13 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
 
 int DBFile::Open (const char *f_path) {
     file.Open(1,const_cast<char *>(f_path));
-    file.GetPage(&writePage,currentPage);
+    metaData = MetaStruct(f_path);
+    if(!metaData.Open())
+    {
+        std::cout<<"We had some error: E(1)";
+        return 0;
+    }
+    //file.GetPage(&writePage,currentPage);
     openFile=true;
     return 1;
 }
@@ -71,8 +77,8 @@ int DBFile::Close () {
     int pos = !file.GetLength()? 0 : file.GetLength()-2;
     file.AddPage(&writePage, pos);
     writePage.EmptyItOut();       
-    file.Close();
     metaData.Close();
+    file.Close();
     return 1;
 }
 
@@ -87,13 +93,17 @@ void DBFile::Add (Record &rec) {
     }
 }
 //TODO this function needs to be done and yet has not been completed
-int DBFile::GetNext (Record &fetchme) {
-    /*
-    while(dbfile.GetPage(&readPage))
-    {
-        if(currentPage)
+int DBFile::GetNext (Record &fetchme) 
+{
+    while (!readPage.GetFirst(&fetchme)) {
+        //std::cout<<metaData.getPages()<<"page\n";
+        if(++currentPage >= metaData.getPages()) 
+        {
+            std::cout<<currentPage<<" "<<metaData.getPages()<<"\n";
+            return 0;  // no more records
+        }
+        file.GetPage(&readPage, currentPage);
     }
-    */
     return 1;
 }
 

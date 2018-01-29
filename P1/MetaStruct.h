@@ -26,5 +26,6 @@ public:
 	int Close ();
     void incPage();
     void setMode();
+	int getPages();
 };
 #endif
