@@ -67,6 +67,13 @@ int DBFile::Open (const char *f_path) {
 }
 
 void DBFile::MoveFirst () {
+    if(!openFile)
+    {
+        return;
+    }
+    readPage.EmptyItOut(); // to remove anything in the array
+    currentPage =0;
+    file.GetPage(&readPage,currentPage++);
 }
 //1 if it is successfully closed and 0 if it is not
 int DBFile::Close () {

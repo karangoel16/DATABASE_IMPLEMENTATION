@@ -14,9 +14,9 @@ main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o 
 	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o -lfl
 	
 test.o: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o 
-	$(CC) --std=c++11 Schema.cc ComparisonEngine.cc DBFile.cc File.cc Record.cc MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
+	$(CC) --std=c++17 Schema.cc ComparisonEngine.cc DBFile.cc File.cc Record.cc MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
 test.o.verbose: test.cc
-	$(CC) --std=c++11 -D verbose ComparisonEngine.cc Schema.cc DBFile.cc File.cc Record.cc MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
+	$(CC) --std=c++17 -D verbose ComparisonEngine.cc Schema.cc DBFile.cc File.cc Record.cc MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
 main.o: main.cc
 	$(CC) -g -c main.cc
 	
