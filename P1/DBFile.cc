@@ -19,6 +19,13 @@ DBFile::DBFile () {
 
 //return 0 of failure and 1 and on success
 int DBFile::Create (const char *f_path, fType f_type, void *startup) {
+    if(openFile) 
+    {
+        /*
+            This is done to check if the file has already been made
+        */
+        return 0;
+    }
     openFile=true;
     metaData=MetaStruct(f_path);
     switch(f_type)
@@ -38,6 +45,16 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
     This is done to bulk load all the records in the database
 */
 void DBFile::Load (Schema &f_schema, const char *loadpath) {
+    /*
+        
+    */
+    if(!openFile)
+    {
+        #ifdef F_DEBUG
+            std::cout<<"The file is being loaded without being either created or opened";
+        #endif
+        return ;
+    }
     FILE * fileLoad = fopen(loadpath,"r");
     if(!fileLoad)
     {
@@ -54,6 +71,13 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
 }
 
 int DBFile::Open (const char *f_path) {
+    if(openFile)
+    {
+        #ifdef F_DEBUG 
+            std::cout<<"The file is already opened and is being opened again without closing";
+        #endif
+        return 0;
+    }
     file.Open(1,const_cast<char *>(f_path));
     metaData = MetaStruct(f_path);
     if(!metaData.Open())
@@ -79,6 +103,9 @@ void DBFile::MoveFirst () {
 int DBFile::Close () {
     if(!openFile)
     {
+        #ifdef F_DEBUG
+            std::cout<<"The file is already closed and we are trying to close it again";
+        #endif 
         return 0;
     }    
     int pos = !file.GetLength()? 0 : file.GetLength()-2;
