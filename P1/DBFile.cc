@@ -97,7 +97,7 @@ void DBFile::MoveFirst () {
     }
     readPage.EmptyItOut(); // to remove anything in the array
     currentPage =0;
-    file.GetPage(&readPage,currentPage++);
+    file.GetPage(&readPage,currentPage);
 }
 //1 if it is successfully closed and 0 if it is not
 int DBFile::Close () {
@@ -108,15 +108,27 @@ int DBFile::Close () {
         #endif 
         return 0;
     }    
-    int pos = !file.GetLength()? 0 : file.GetLength()-2;
-    file.AddPage(&writePage, pos);
-    writePage.EmptyItOut();       
+    int pos = !file.GetLength()? 0 : file.GetLength()-1;
+    //TODO to check if a particular file has some records to be written or not
+    if(!writePage.empty())
+    {
+        file.AddPage(&writePage, pos);
+        metaData.incPage();
+        writePage.EmptyItOut();       
+    }
     metaData.Close();
     file.Close();
     return 1;
 }
 
 void DBFile::Add (Record &rec) {
+        if(!openFile)
+    {
+        #ifdef F_DEBUG
+            std::cout<<"The file is already closed and we are trying to close it again";
+        #endif 
+        return ;
+    }    
     if(!writePage.Append(&rec))
     {
         int pos = file.GetLength()==0? 0:file.GetLength()-1; 
@@ -130,7 +142,6 @@ void DBFile::Add (Record &rec) {
 int DBFile::GetNext (Record &fetchme) 
 {
     while (!readPage.GetFirst(&fetchme)) {
-        //std::cout<<metaData.getPages()<<"page\n";
         if(++currentPage >= metaData.getPages()) 
         {
             std::cout<<currentPage<<" "<<metaData.getPages()<<"\n";
@@ -145,7 +156,7 @@ int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     ComparisonEngine comp;
     while(GetNext(fetchme))
     {
-        if(comp.Compare(&fetchme, &literal, &cnf)) 
+        if(!comp.Compare(&fetchme, &literal, &cnf)) 
         {
             return 1;
         }

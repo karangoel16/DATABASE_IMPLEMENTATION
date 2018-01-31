@@ -156,6 +156,14 @@ void Page :: FromBinary (char *bits) {
 	delete temp;
 }
 
+/*
+	TODO: To ask if we can add functions by our own or not
+	This is out own function to check if the particular array has some record or not
+*/
+bool Page::empty(){
+	return numRecs==0;
+}
+
 File :: File () {
 }
 

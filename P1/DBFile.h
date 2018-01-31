@@ -21,7 +21,6 @@ private:
 	MetaStruct metaData;
 public:
 	DBFile (); 
-
 	int Create (const char *fpath, fType file_type, void *startup);
 	int Open (const char *fpath);
 	int Close ();

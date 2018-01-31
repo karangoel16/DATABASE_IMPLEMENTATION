@@ -33,30 +33,40 @@ TEST (DB_FILE,create) {
             #endif
             dbfile.Add(temp);
         }
-        ASSERT_EQ(dbfile.Close (),1);
+        dbfile.Close ();
     }
 }
 
 TEST (DBFile, read)
-{
-	for(auto i:rel_ptr)
-	{
-		Record temp;
-		DBFile dbfile;
-		dbfile.Open(i->path());
-		int counter=0;
-		//std::cout<<"hello";
-		while(dbfile.GetNext(temp))
-		{
-				temp.Print(i->schema());
-		}
-		dbfile.Close();
+{	int findx = 0;
+	while (findx < 1 || findx > 7) {
+		cout << "\n select table: \n";
+		cout << "\t 1. nation \n";
+		cout << "\t 2. region \n";
+		cout << "\t 3. customer \n";
+		cout << "\t 4. part \n";
+		cout << "\t 5. partsupp \n";
+		cout << "\t 6. orders \n";
+		cout << "\t 7. lineitem \n \t ";
+		cin >> findx;
 	}
+
+	Record temp;
+	DBFile dbfile;
+	dbfile.Open(rel_ptr[findx]->path());
+	int counter=0;
+	while(dbfile.GetNext(temp))
+	{
+		temp.Print(rel_ptr[findx]->schema());
+	}
+	dbfile.Close();
 }
 TEST(CNF_TEST, first_test_case){
 	for(auto i:rel_ptr){
+		cout << " Filter with CNF for : " << i->name() << "\n";
 		DBFile dbfile;
 		dbfile.Open(i->path());
+		dbfile.MoveFirst();
 		Record temp;
 		int counter;
 		CNF cnf;
@@ -66,6 +76,7 @@ TEST(CNF_TEST, first_test_case){
 		{
 				temp.Print (i->schema());
 		}
+		
 	}
 }
 // sequential scan of a DBfile 
@@ -120,8 +131,8 @@ void test3 () {
 int main(int argc, char* argv[]){
 
 	setup (catalog_path, dbfile_dir, tpch_dir.c_str());
-	//rel_ptr = {n, r, c, p, ps, o, li};
-	rel_ptr= {li};
+	rel_ptr = {n, r, c, p, ps, o, li};
+	//rel_ptr= {li};
     /*void (*test_ptr[]) () = {&test1, &test2, &test3};  
 
 	int tindx = 0;

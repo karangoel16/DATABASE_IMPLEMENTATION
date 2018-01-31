@@ -1,4 +1,4 @@
-CC = clang++-5.0 -O2 -Wno-deprecated 
+CC = clang++-5.0 -O2 -Wno-deprecated  -Wno-unused-variable
 
 
 tag = -i
@@ -15,8 +15,8 @@ main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o 
 	
 test.o: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o y.tab.o lex.yy.o
 	$(CC) --std=c++17 Schema.o ComparisonEngine.o Comparison.o DBFile.o File.o Record.o MetaStruct.cc y.tab.o lex.yy.o test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread -lfl
-test.o.verbose: test.cc
-	$(CC) --std=c++17 -D verbose ComparisonEngine.cc Schema.cc DBFile.cc File.cc Record.cc MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread -lfl
+test.o.verbose: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o y.tab.o lex.yy.o
+	$(CC) --std=c++17 -D verbose Comparison.o ComparisonEngine.o Schema.cc DBFile.cc File.cc Record.cc MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread -lfl
 main.o: main.cc
 	$(CC) -g -c main.cc
 	
