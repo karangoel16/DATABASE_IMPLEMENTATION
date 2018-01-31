@@ -26,13 +26,13 @@ TEST (DB_FILE,create) {
         //cout << " tpch file will be loaded from " << tbl_path << endl;
         dbfile.Load (*(i->schema ()), &tbl_path[0u]);
         Record temp;
-        /*Schema mySchema ("catalog", i->name());
+        Schema mySchema ("catalog", i->name());
         while(temp.SuckNextRecord(&mySchema,tableFile)){
             #ifdef verbose
                 temp.Print(&mySchema);
             #endif
             dbfile.Add(temp);
-        }*/
+        }
         ASSERT_EQ(dbfile.Close (),1);
     }
 }
@@ -51,6 +51,21 @@ TEST (DBFile, read)
 				temp.Print(i->schema());
 		}
 		dbfile.Close();
+	}
+}
+TEST(CNF_TEST, first_test_case){
+	for(auto i:rel_ptr){
+		DBFile dbfile;
+		dbfile.Open(i->path());
+		Record temp;
+		int counter;
+		CNF cnf;
+		Record literal;
+		i->get_cnf (cnf, literal);
+		while(dbfile.GetNext(temp,cnf,literal))
+		{
+				temp.Print (i->schema());
+		}
 	}
 }
 // sequential scan of a DBfile 
@@ -105,8 +120,8 @@ void test3 () {
 int main(int argc, char* argv[]){
 
 	setup (catalog_path, dbfile_dir, tpch_dir.c_str());
-	rel_ptr = {n, r, c, p, ps, o, li};
-	//rel_ptr= {r};
+	//rel_ptr = {n, r, c, p, ps, o, li};
+	rel_ptr= {li};
     /*void (*test_ptr[]) () = {&test1, &test2, &test3};  
 
 	int tindx = 0;
