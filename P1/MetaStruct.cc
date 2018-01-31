@@ -26,7 +26,6 @@ MetaStruct::MetaStruct () {
 
 
 int MetaStruct::Open () {
-    std::cout<<mPath<<"\n";
     ifstream ifile(mPath);
     if(!ifile)
     {
@@ -41,8 +40,6 @@ int MetaStruct::Open () {
     getline(ifile,line);
     try {
         numPages = std::stoi(line); //don't call c_str() 
-
-        std::cout << numPages << endl;
     }
     catch(std::exception const & e)
     {

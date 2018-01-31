@@ -32,7 +32,6 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
     {
         case heap:
                 file.Open(0,const_cast<char*>(f_path));
-                std::cout<<file.GetLength()<<"\n";
                 return 1;
         case sorted:
         case tree: 
@@ -46,7 +45,7 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
 */
 void DBFile::Load (Schema &f_schema, const char *loadpath) {
     /*
-        
+        This is done to check if the file exist 
     */
     if(!openFile)
     {
@@ -71,9 +70,9 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
 }
 
 int DBFile::Open (const char *f_path) {
-    if(openFile)
+     if(openFile)
     {
-        #ifdef F_DEBUG 
+        #ifdef F_DEBUG
             std::cout<<"The file is already opened and is being opened again without closing";
         #endif
         return 0;
@@ -85,7 +84,7 @@ int DBFile::Open (const char *f_path) {
         std::cout<<"We had some error: E(1)";
         return 0;
     }
-    //file.GetPage(&writePage,currentPage);
+    //file.GetPage(&readPage,currentPage);
     openFile=true;
     return 1;
 }
@@ -96,25 +95,18 @@ void DBFile::MoveFirst () {
         return;
     }
     readPage.EmptyItOut(); // to remove anything in the array
-    currentPage =0;
-    file.GetPage(&readPage,currentPage);
+    file.GetPage(&readPage,currentPage=0);
 }
 //1 if it is successfully closed and 0 if it is not
-int DBFile::Close () {
-    if(!openFile)
-    {
-        #ifdef F_DEBUG
-            std::cout<<"The file is already closed and we are trying to close it again";
-        #endif 
-        return 0;
-    }    
-    int pos = !file.GetLength()? 0 : file.GetLength()-1;
+int DBFile::Close () { 
     //TODO to check if a particular file has some records to be written or not
     if(!writePage.empty())
     {
+        int pos = !file.GetLength()? 0 : file.GetLength()-2;
         file.AddPage(&writePage, pos);
-        metaData.incPage();
         writePage.EmptyItOut();       
+        metaData.incPage();
+        file.AddPage(&writePage, file.GetLength()-1);
     }
     metaData.Close();
     file.Close();
@@ -122,32 +114,39 @@ int DBFile::Close () {
 }
 
 void DBFile::Add (Record &rec) {
-        if(!openFile)
+    if(!openFile)
     {
         #ifdef F_DEBUG
             std::cout<<"The file is already closed and we are trying to close it again";
         #endif 
         return ;
     }    
+    if(file.GetLength()>=2) 
+    {
+        file.GetPage(&writePage, file.GetLength()-2);
+    }
     if(!writePage.Append(&rec))
     {
-        int pos = file.GetLength()==0? 0:file.GetLength()-1; 
+        int pos = file.GetLength()==0? 0:file.GetLength()-2; 
         file.AddPage(&writePage,pos);
         metaData.incPage();
         writePage.EmptyItOut();
         writePage.Append(&rec);
+        file.AddPage(&writePage, file.GetLength()-1);
     }
+    return ;
 }
 //TODO this function needs to be done and yet has not been completed
 int DBFile::GetNext (Record &fetchme) 
 {
+    std::cout<<currentPage<<"\n";
     while (!readPage.GetFirst(&fetchme)) {
-        if(++currentPage >= metaData.getPages()) 
+        if(currentPage >=file.GetLength()-1) 
         {
-            std::cout<<currentPage<<" "<<metaData.getPages()<<"\n";
-            return 0;  // no more records
+            std::cout<<currentPage<<" "<<metaData.getPages()<<"**\n";
+            return 0;
         }
-        file.GetPage(&readPage, currentPage);
+        file.GetPage(&readPage, currentPage++);
     }
     return 1;
 }

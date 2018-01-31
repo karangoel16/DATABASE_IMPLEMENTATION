@@ -17,10 +17,9 @@ using namespace std;
 relation *rel;
 vector<relation *> rel_ptr;
 TEST (DB_FILE,create) {
-    for (auto i:rel_ptr)
-    {
+    for (auto i:rel_ptr){
         DBFile dbfile;
-	    ASSERT_EQ(dbfile.Create (i->path(), heap, NULL),1);
+	    dbfile.Create (i->path(), heap, NULL);
         string tbl_path=tpch_dir+i->name()+".tbl";
         FILE *tableFile = fopen (&tbl_path[0u], "r");
         //cout << " tpch file will be loaded from " << tbl_path << endl;
@@ -53,11 +52,16 @@ TEST (DBFile, read)
 
 	Record temp;
 	DBFile dbfile;
-	dbfile.Open(rel_ptr[findx]->path());
+	std::cout<<findx<<"\n";;
+	dbfile.Open(rel_ptr[findx-1]->path());
+	//CNF cnf;
+	//Record literal;
 	int counter=0;
 	while(dbfile.GetNext(temp))
 	{
-		temp.Print(rel_ptr[findx]->schema());
+		//if(counter%100000==0)
+			temp.Print(rel_ptr[findx-1]->schema());
+		//counter++;
 	}
 	dbfile.Close();
 }

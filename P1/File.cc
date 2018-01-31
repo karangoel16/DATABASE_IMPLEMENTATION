@@ -165,6 +165,7 @@ bool Page::empty(){
 }
 
 File :: File () {
+	curLength=0;
 }
 
 File :: ~File () {
