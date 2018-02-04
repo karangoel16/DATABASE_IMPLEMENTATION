@@ -15,13 +15,16 @@ main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o 
 	
 test.o: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o y.tab.o lex.yy.o y.tab.o 
 	$(CC) --std=c++17 -D F_DEBUG Comparison.o ComparisonEngine.o Schema.cc DBFile.cc File.cc Record.cc y.tab.o lex.yy.o MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lfl
+
 test.o.verbose: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o y.tab.o lex.yy.o y.tab.o 
 	$(CC) --std=c++17 -D verbose Comparison.o ComparisonEngine.o Schema.cc DBFile.cc File.cc Record.cc y.tab.o lex.yy.o MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread -lfl
+
 main.o: main.cc
 	$(CC) -g -c main.cc
 	
 MetaStruct.o: MetaStruct.cc
 	$(CC) -g -c MetaStruct.cc
+
 Comparison.o: Comparison.cc
 	$(CC) -g -c Comparison.cc
 	

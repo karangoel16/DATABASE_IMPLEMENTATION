@@ -3,6 +3,7 @@
 #include "Record.h"
 #include "File.h"
 #include <stdlib.h>
+#include <algorithm>
 using namespace std;
 
 extern "C" {
@@ -60,11 +61,13 @@ int main () {
                 temp.Print (&mySchema);
 			if(!page.Append(&temp))
 			{
-				std::cout<<i<<"\n";
-				i++;
-				std::cout<<"Page Increased";
-				file.AddPage(&page,i);
-				page.Append(&temp);
+				int pos = file.GetLength()==0? 0:file.GetLength()-2; 
+				std::cout<<"Page Increased ";
+				std::cout<<pos<<endl;
+				file.AddPage(&page,pos);
+				page.EmptyItOut();
+        		page.Append(&temp);
+        		file.AddPage(&page, file.GetLength()-1);
 			}
         }
 		file.Close();

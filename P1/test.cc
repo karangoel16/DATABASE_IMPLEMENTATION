@@ -66,21 +66,39 @@ TEST (DBFile, read)
 	dbfile.Close();
 }
 TEST(CNF_TEST, first_test_case){
+	int findx = 0;
+	while (findx < 1 || findx > 7) {
+		cout << "\n select table: \n";
+		cout << "\t 1. nation \n";
+		cout << "\t 2. region \n";
+		cout << "\t 3. customer \n";
+		cout << "\t 4. part \n";
+		cout << "\t 5. partsupp \n";
+		cout << "\t 6. orders \n";
+		cout << "\t 7. lineitem \n \t ";
+		cin >> findx;
+	}
+	cout << " Filter with CNF for : " << rel_ptr[findx-1]->name() << "\n";
+	DBFile dbfile;
+	dbfile.Open(rel_ptr[findx-1]->path());
+	dbfile.MoveFirst();
+	Record temp;
+	int counter;
+	CNF cnf;
+	Record literal;
+	rel_ptr[findx-1]->get_cnf (cnf, literal);
+	while(dbfile.GetNext(temp,cnf,literal))
+	{
+			temp.Print (rel_ptr[findx-1]->schema());
+	}
+		
+}
+TEST(DB_FILE,close){
 	for(auto i:rel_ptr){
-		cout << " Filter with CNF for : " << i->name() << "\n";
 		DBFile dbfile;
 		dbfile.Open(i->path());
-		dbfile.MoveFirst();
-		Record temp;
-		int counter;
-		CNF cnf;
-		Record literal;
-		i->get_cnf (cnf, literal);
-		while(dbfile.GetNext(temp,cnf,literal))
-		{
-				temp.Print (i->schema());
-		}
-		
+		dbfile.Close();
+		ASSERT_EQ(dbfile.Close(),0);
 	}
 }
 // sequential scan of a DBfile 

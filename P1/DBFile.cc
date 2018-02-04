@@ -24,6 +24,9 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
         /*
             This is done to check if the file has already been made
         */
+        #ifdef F_DEBUG
+            std::cout<<"File already is opened when we are trying to create";
+        #endif
         return 0;
     }
     openFile=true;
@@ -57,7 +60,7 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
     FILE * fileLoad = fopen(loadpath,"r");
     if(!fileLoad)
     {
-        #ifdef verbose
+        #ifdef F_DEBUG
             std::cout<<"File could not be opened";
             exit(1);
         #endif
@@ -67,6 +70,7 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
     {
         Add(pull);
     }
+    return ;
 }
 
 int DBFile::Open (const char *f_path) {
@@ -92,22 +96,28 @@ int DBFile::Open (const char *f_path) {
 void DBFile::MoveFirst () {
     if(!openFile)
     {
+        #ifdef F_DEBUG
+            std::cout<<"The file is not opened and read record is being moved to first";
+        #endif
         return;
     }
+    //this is done to write the record which are still in the cache and needs to be written in file before any things starts
+    check_write();
     readPage.EmptyItOut(); // to remove anything in the array
     file.GetPage(&readPage,currentPage=0);
 }
 //1 if it is successfully closed and 0 if it is not
 int DBFile::Close () { 
     //TODO to check if a particular file has some records to be written or not
-    if(!writePage.empty())
+    if(!openFile)
     {
-        int pos = !file.GetLength()? 0 : file.GetLength()-2;
-        file.AddPage(&writePage, pos);
-        writePage.EmptyItOut();       
-        metaData.incPage();
-        file.AddPage(&writePage, file.GetLength()-1);
+        #ifdef F_DEBUG
+            std::cout<<"The file has we are trying to close has already been closed\n";
+        #endif
+        return 0;
     }
+    check_write();
+    openFile = false; //we have closed the file again
     metaData.Close();
     file.Close();
     return 1;
@@ -139,11 +149,11 @@ void DBFile::Add (Record &rec) {
 //TODO this function needs to be done and yet has not been completed
 int DBFile::GetNext (Record &fetchme) 
 {
-    std::cout<<currentPage<<"\n";
+    check_write(); //to check if we need to write before getNext in case some records have been written in the file
     while (!readPage.GetFirst(&fetchme)) {
         if(currentPage >=file.GetLength()-1) 
         {
-            std::cout<<currentPage<<" "<<metaData.getPages()<<"**\n";
+            //std::cout<<currentPage<<" "<<metaData.getPages()<<"**\n";
             return 0;
         }
         file.GetPage(&readPage, currentPage++);

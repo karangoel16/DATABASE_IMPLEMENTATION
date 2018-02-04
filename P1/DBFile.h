@@ -19,6 +19,16 @@ private:
 	int currentPage;
 	bool openFile;
 	MetaStruct metaData;
+	void check_write(){
+    	if(!writePage.empty())
+		{
+			int pos = !file.GetLength()? 0 : file.GetLength()-2;
+			file.AddPage(&writePage, pos);
+			writePage.EmptyItOut();       
+			metaData.incPage();
+			file.AddPage(&writePage, file.GetLength()-1);
+		}
+	}
 public:
 	DBFile (); 
 	int Create (const char *fpath, fType file_type, void *startup);
