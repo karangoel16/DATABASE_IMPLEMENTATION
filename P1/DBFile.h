@@ -8,7 +8,7 @@
 #include "Comparison.h"
 #include "ComparisonEngine.h"
 #include "MetaStruct.h"
-
+#include <iostream>
 // stub DBFile header..replace it with your own DBFile.h 
 
 class DBFile {
@@ -22,11 +22,10 @@ private:
 	void check_write(){
     	if(!writePage.empty())
 		{
-			int pos = !file.GetLength()? 0 : file.GetLength()-2;
+			int pos = !file.GetLength()? 0 : file.GetLength()-1;
 			file.AddPage(&writePage, pos);
 			writePage.EmptyItOut();       
 			metaData.incPage();
-			file.AddPage(&writePage, file.GetLength()-1);
 		}
 	}
 public:
@@ -39,6 +38,5 @@ public:
 	void Add (Record &addme);
 	int GetNext (Record &fetchme);
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
-	int Genlength();
 };
 #endif

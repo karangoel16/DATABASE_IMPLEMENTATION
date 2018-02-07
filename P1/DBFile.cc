@@ -88,7 +88,6 @@ int DBFile::Open (const char *f_path) {
         std::cout<<"We had some error: E(1)";
         return 0;
     }
-    //file.GetPage(&readPage,currentPage);
     openFile=true;
     return 1;
 }
@@ -131,18 +130,14 @@ void DBFile::Add (Record &rec) {
         #endif 
         return ;
     }    
-    if(file.GetLength()>=2) 
-    {
-        file.GetPage(&writePage, file.GetLength()-2);
-    }
     if(!writePage.Append(&rec))
     {
-        int pos = file.GetLength()==0? 0:file.GetLength()-2; 
+        int pos = file.GetLength()==0? 0:file.GetLength()-1; 
         file.AddPage(&writePage,pos);
         metaData.incPage();
         writePage.EmptyItOut();
         writePage.Append(&rec);
-        file.AddPage(&writePage, file.GetLength()-1);
+        //file.AddPage(&writePage, file.GetLength()-1);
     }
     return ;
 }
@@ -157,12 +152,9 @@ int DBFile::GetNext (Record &fetchme)
     }
     check_write(); //to check if we need to write before getNext in case some records have been written in the file
     while (!readPage.GetFirst(&fetchme)) {
-        if(currentPage >=file.GetLength()-1) 
-        {
-            //std::cout<<currentPage<<" "<<metaData.getPages()<<"**\n";
+        if(++currentPage >=file.GetLength()-1) 
             return 0;
-        }
-        file.GetPage(&readPage, currentPage++);
+        file.GetPage(&readPage, currentPage);
     }
     return 1;
 }
