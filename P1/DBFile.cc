@@ -149,6 +149,12 @@ void DBFile::Add (Record &rec) {
 //TODO this function needs to be done and yet has not been completed
 int DBFile::GetNext (Record &fetchme) 
 {
+    if(!openFile){
+        #ifdef F_DEBUG
+            std::cout<<"The file is already closed and we are trying to read it again";
+        #endif
+        return 0;
+    }
     check_write(); //to check if we need to write before getNext in case some records have been written in the file
     while (!readPage.GetFirst(&fetchme)) {
         if(currentPage >=file.GetLength()-1) 
@@ -162,6 +168,12 @@ int DBFile::GetNext (Record &fetchme)
 }
 
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
+    if(!openFile){
+        #ifdef F_DEBUG
+            std::cout<<"The file is already closed and we are trying to read it again";
+        #endif
+        return 0;
+    }
     ComparisonEngine comp;
     while(GetNext(fetchme))
     {

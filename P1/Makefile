@@ -1,30 +1,26 @@
-CC = clang++-5.0 -O2 -Wno-deprecated  
-
+CC = g++ -std=c++11 -O2 -Wno-deprecated 
 
 tag = -i
 
 ifdef linux
-	tag = -n
+tag = -n
 endif
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o test.o -lfl
+test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o -lfl
 	
 main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o
 	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o -lfl
-	
-test.o: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o y.tab.o lex.yy.o y.tab.o 
-	$(CC) --std=c++17 -D F_DEBUG Comparison.o ComparisonEngine.o Schema.cc DBFile.cc File.cc Record.cc y.tab.o lex.yy.o MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lfl
 
-test.o.verbose: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o y.tab.o lex.yy.o y.tab.o 
-	$(CC) --std=c++17 -D verbose Comparison.o ComparisonEngine.o Schema.cc DBFile.cc File.cc Record.cc y.tab.o lex.yy.o MetaStruct.cc test.cc -o test -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread -lfl
+MetaStruct.o: MetaStruct.cc
+	$(CC) -g -c MetaStruct.cc
+
+test.o: test.cc
+	$(CC) -g -c test.cc
 
 main.o: main.cc
 	$(CC) -g -c main.cc
 	
-MetaStruct.o: MetaStruct.cc
-	$(CC) -g -c MetaStruct.cc
-
 Comparison.o: Comparison.cc
 	$(CC) -g -c Comparison.cc
 	
@@ -58,4 +54,3 @@ clean:
 	rm -f y.tab.c
 	rm -f lex.yy.c
 	rm -f y.tab.h
-	rm -f *.bin
