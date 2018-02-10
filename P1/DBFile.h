@@ -19,6 +19,7 @@ private:
 	int currentPage;
 	bool openFile;
 	MetaStruct metaData;
+	//this function is used to clear out write page when going to read mode from write
 	void check_write(){
     	if(!writePage.empty())
 		{

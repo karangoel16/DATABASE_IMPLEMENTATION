@@ -137,7 +137,6 @@ void DBFile::Add (Record &rec) {
         metaData.incPage();
         writePage.EmptyItOut();
         writePage.Append(&rec);
-        //file.AddPage(&writePage, file.GetLength()-1);
     }
     return ;
 }
@@ -169,7 +168,7 @@ int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     ComparisonEngine comp;
     while(GetNext(fetchme))
     {
-        if(!comp.Compare(&fetchme, &literal, &cnf)) 
+        if(comp.Compare(&fetchme, &literal, &cnf)) 
         {
             return 1;
         }
