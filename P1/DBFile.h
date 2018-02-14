@@ -1,13 +1,6 @@
 #ifndef DBFILE_H
 #define DBFILE_H
 
-#include "TwoWayList.h"
-#include "Record.h"
-#include "Schema.h"
-#include "File.h"
-#include "Comparison.h"
-#include "ComparisonEngine.h"
-#include "MetaStruct.h"
 #include <iostream>
 #include "HeapFile.h"
 #include "SortedFile.h"
@@ -16,24 +9,10 @@
 // stub DBFile header..replace it with your own DBFile.h 
 
 class DBFile {
-private:
-	File file;
-	Page writePage;
-	Page readPage;
-	int currentPage;
+	VirtualDBFile * dbfile;
 	bool openFile;
 	MetaStruct metaData;
-	VirtualDBFile * dbfile;
 	//this function is used to clear out write page when going to read mode from write
-	void check_write(){
-    	if(!writePage.empty())
-		{
-			int pos = !file.GetLength()? 0 : file.GetLength()-1;
-			file.AddPage(&writePage, pos);
-			writePage.EmptyItOut();       
-			metaData.incPage();
-		}
-	}
 public:
 	DBFile (); 
 	int Create (const char *fpath, fType file_type, void *startup);

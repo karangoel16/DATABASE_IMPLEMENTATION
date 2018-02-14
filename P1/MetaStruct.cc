@@ -71,3 +71,7 @@ void MetaStruct::incPage () {
 int MetaStruct::getPages(){
     return numPages;
 }
+
+fType MetaStruct::getType(){
+    return mode;
+}

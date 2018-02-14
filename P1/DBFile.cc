@@ -13,8 +13,9 @@ using namespace std;
 
 
 DBFile::DBFile () {
-    currentPage =0;
+    //dbfile->currentPage =0;
     openFile =false;
+
 }
 
 //return 0 of failure and 1 and on success
@@ -35,10 +36,11 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
     {
         case heap:
                 dbfile=new HeapFile();
-                file.Open(0,const_cast<char*>(f_path));
+                dbfile->file.Open(0,const_cast<char*>(f_path));
                 return 1;
         case sorted:
                 dbfile = new SortedFile();
+                break;
         case tree: 
         default: std::cout<<"The mode has not been implemented"<<endl;
     }
@@ -59,19 +61,7 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
         #endif
         return ;
     }
-    FILE * fileLoad = fopen(loadpath,"r");
-    if(!fileLoad)
-    {
-        #ifdef F_DEBUG
-            std::cout<<"File could not be opened";
-            exit(1);
-        #endif
-    }
-    Record pull;
-    while(pull.SuckNextRecord(&f_schema,fileLoad))
-    {
-        Add(pull);
-    }
+    dbfile->Load(f_schema,loadpath);
     return ;
 }
 
@@ -83,19 +73,29 @@ int DBFile::Open (const char *f_path) {
         #endif
         return 0;
     }
-    file.Open(1,const_cast<char *>(f_path));
     metaData = MetaStruct(f_path);
     if(!metaData.Open())
     {
-        std::cout<<"We had some error: E(1)";
+        std::cout<<"We had some error: E(1)\n";
         return 0;
     }
     openFile=true;
+    switch(metaData.getType())
+    {
+        case heap:dbfile = new HeapFile();
+            break;
+        case sorted:dbfile = new SortedFile();
+            break;
+        case tree:
+        default:NEED_TO_IMPLEMENT
+        return 0;
+    }
+    dbfile->file.Open(1,const_cast<char *>(f_path));
     return 1;
 }
 
 void DBFile::MoveFirst () {
-    if(!openFile)
+    if(!openFile || !dbfile)
     {
         #ifdef F_DEBUG
             std::cout<<"The file is not opened and read record is being moved to first";
@@ -103,77 +103,52 @@ void DBFile::MoveFirst () {
         return;
     }
     //this is done to write the record which are still in the cache and needs to be written in file before any things starts
-    check_write();
-    readPage.EmptyItOut(); // to remove anything in the array
-    file.GetPage(&readPage,currentPage=0);
+    dbfile->MoveFirst();
 }
 //1 if it is successfully closed and 0 if it is not
 int DBFile::Close () { 
     //TODO to check if a particular file has some records to be written or not
-    if(!openFile)
+    if(!openFile || !dbfile)
     {
         #ifdef F_DEBUG
             std::cout<<"The file has we are trying to close has already been closed\n";
         #endif
         return 0;
     }
-    check_write();
     openFile = false; //we have closed the file again
+    dbfile->Close();
     metaData.Close();
-    file.Close();
     return 1;
 }
 
 void DBFile::Add (Record &rec) {
-    if(!openFile)
+    if(!openFile || !dbfile)
     {
         #ifdef F_DEBUG
             std::cout<<"The file is already closed and we are trying to close it again";
         #endif 
         return ;
-    }    
-    if(!writePage.Append(&rec))
-    {
-        int pos = file.GetLength()==0? 0:file.GetLength()-1; 
-        file.AddPage(&writePage,pos);
-        metaData.incPage();
-        writePage.EmptyItOut();
-        writePage.Append(&rec);
-    }
-    return ;
+    }  
+    dbfile->Add(rec);
 }
 //TODO this function needs to be done and yet has not been completed
 int DBFile::GetNext (Record &fetchme) 
 {
-    if(!openFile){
+    if(!openFile || !dbfile){
         #ifdef F_DEBUG
             std::cout<<"The file is already closed and we are trying to read it again";
         #endif
         return 0;
     }
-    check_write(); //to check if we need to write before getNext in case some records have been written in the file
-    while (!readPage.GetFirst(&fetchme)) {
-        if(++currentPage >=file.GetLength()-1) 
-            return 0;
-        file.GetPage(&readPage, currentPage);
-    }
-    return 1;
+    return dbfile->GetNext(fetchme);
 }
 
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
-    if(!openFile){
+    if(!openFile || !dbfile){
         #ifdef F_DEBUG
             std::cout<<"The file is already closed and we are trying to read it again";
         #endif
         return 0;
     }
-    ComparisonEngine comp;
-    while(GetNext(fetchme))
-    {
-        if(comp.Compare(&fetchme, &literal, &cnf)) 
-        {
-            return 1;
-        }
-    }
-    return 0;
+    return dbfile->GetNext(fetchme,cnf,literal);
 }

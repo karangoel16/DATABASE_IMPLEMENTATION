@@ -7,6 +7,7 @@
 
 #define PAGE_SIZE 131072
 
+#define NEED_TO_IMPLEMENT std::cout<<"Need to implement"<<"\n";
 
 enum Target {Left, Right, Literal};
 enum CompOperator {LessThan, GreaterThan, Equals};
