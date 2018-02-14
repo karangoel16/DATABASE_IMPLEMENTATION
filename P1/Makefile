@@ -6,8 +6,8 @@ ifdef linux
 tag = -n
 endif
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o
-	$(CC) -D F_DEBUG -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o -lfl -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
+test.out: Record.o Comparison.o VirtualDBFile.o ComparisonEngine.o HeapFile.o SortedFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o
+	$(CC) -D F_DEBUG -o test.out VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o -lfl -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
 	
 main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o
 	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o -lfl
@@ -38,6 +38,15 @@ Record.o: Record.cc
 
 Schema.o: Schema.cc
 	$(CC) -g -c Schema.cc
+
+HeapFile.o: HeapFile.cc
+	$(CC) -g -c HeapFile.cc
+
+SortedFile.o: SortedFile.cc
+	$(CC) -g -c SortedFile.cc
+
+VirtualDBFile.o: VirtualDBFile.cc
+	$(CC) -g -c VirtualDBFile.cc
 	
 y.tab.o: Parser.y
 	yacc -d Parser.y

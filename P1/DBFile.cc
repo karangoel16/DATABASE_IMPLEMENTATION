@@ -34,9 +34,11 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
     switch(f_type)
     {
         case heap:
+                dbfile=new HeapFile();
                 file.Open(0,const_cast<char*>(f_path));
                 return 1;
         case sorted:
+                dbfile = new SortedFile();
         case tree: 
         default: std::cout<<"The mode has not been implemented"<<endl;
     }
