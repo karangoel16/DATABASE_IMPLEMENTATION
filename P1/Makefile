@@ -6,8 +6,8 @@ ifdef linux
 tag = -n
 endif
 
-test.out: Record.o Comparison.o VirtualDBFile.o ComparisonEngine.o HeapFile.o SortedFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o
-	$(CC) -D F_DEBUG -o test.out VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o -lfl -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
+test.out: Record.o Comparison.o VirtualDBFile.o BigQ.o Pipe.o ComparisonEngine.o HeapFile.o SortedFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o
+	$(CC) -D F_DEBUG -o test.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o -lfl -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
 	
 main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o
 	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o -lfl
@@ -35,6 +35,12 @@ File.o: File.cc
 
 Record.o: Record.cc
 	$(CC) -g -c Record.cc
+
+BigQ.o: Pipe.cc
+	$(CC) -g -c BigQ.cc
+
+Pipe.o: Pipe.cc
+	$(CC) -g -c Pipe.cc
 
 Schema.o: Schema.cc
 	$(CC) -g -c Schema.cc

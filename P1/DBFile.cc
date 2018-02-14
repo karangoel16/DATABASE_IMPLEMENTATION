@@ -31,16 +31,18 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
         return 0;
     }
     openFile=true;
-    metaData=MetaStruct(f_path);
     switch(f_type)
     {
         case heap:
+                metaData=MetaStruct(f_path);
                 dbfile=new HeapFile();
                 dbfile->file.Open(0,const_cast<char*>(f_path));
                 return 1;
         case sorted:
+                metaData=MetaStruct(f_path,sorted);
                 dbfile = new SortedFile();
-                break;
+                dbfile->file.Open(0,const_cast<char*>(f_path));
+                return 1;
         case tree: 
         default: std::cout<<"The mode has not been implemented"<<endl;
     }
