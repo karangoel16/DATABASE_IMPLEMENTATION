@@ -7,7 +7,6 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen): Pin(in),P
 	int rc = pthread_create(&threadRes, NULL, result, (void *)this);
 	if(result)
     // finally shut down the out pipe
-
 	out.ShutDown ();
 }
 

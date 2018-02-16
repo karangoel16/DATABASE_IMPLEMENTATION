@@ -31,22 +31,24 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
         return 0;
     }
     openFile=true;
-    switch(f_type)
+    switch(static_cast<fType>(f_type))
     {
-        case heap:
-                metaData=MetaStruct(f_path);
+        case 0:
+                metaData=MetaStruct(f_path,heap,0,0,NULL);
                 dbfile=new HeapFile();
                 dbfile->file.Open(0,const_cast<char*>(f_path));
-                return 1;
-        case sorted:
-                metaData=MetaStruct(f_path,sorted);
+                break;
+        case 1:
+                typedef struct { OrderMaker* o; int l; } * pOrder;
+                pOrder po=(pOrder) startup;
+                metaData=MetaStruct(f_path,sorted,0,po->l,po->o);
                 dbfile = new SortedFile();
                 dbfile->file.Open(0,const_cast<char*>(f_path));
-                return 1;
-        case tree: 
-        default: std::cout<<"The mode has not been implemented"<<endl;
+                break;
+        //case 2: 
+        //default: std::cout<<"The mode has not been implemented"<<endl;
     }
-    return 0;
+    return 1;
 }
 
 /*

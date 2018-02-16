@@ -15,15 +15,21 @@
 using namespace std;
 
 
-MetaStruct::MetaStruct (const char *fPath, fType m, int n) {
+MetaStruct::MetaStruct (const char *fPath, fType m, int n,int run=0,OrderMaker *o=NULL) {
     mode = m;
     numPages = n;
+    runLength=run;
+    myOrder = o;
     mPath = string(fPath) + ".meta";
+}
+
+MetaStruct::MetaStruct (const char *fPath) {
+    mPath = string(fPath) + ".meta";
+    myOrder =new OrderMaker();
 }
 
 MetaStruct::MetaStruct () {
 }
-
 
 int MetaStruct::Open () {
     ifstream ifile(mPath);
@@ -37,15 +43,10 @@ int MetaStruct::Open () {
     string line;
     getline(ifile,line);
     mode=static_cast<fType>(stoi(line));
-    getline(ifile,line);
-    try {
-        numPages = std::stoi(line); //don't call c_str() 
+    if(mode!=heap){
+        ifile >> *myOrder;
+        ifile >> runLength;
     }
-    catch(std::exception const & e)
-    {
-         cout<<"error : " << e.what() <<endl;
-    }
-    ifile.close();
     return 1;
 } 
 
@@ -59,7 +60,10 @@ int MetaStruct::Close () {
         return 0;
     }
     ofile<<mode<<endl;
-    ofile<<numPages<<endl;
+    if(mode!=heap){
+        ofile<<*myOrder;
+        ofile<<runLength<<endl;
+    }
     ofile.close();
     return 1;
 }

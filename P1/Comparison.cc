@@ -63,6 +63,27 @@ void Comparison :: Print () {
 }
 
 
+//Overloaded outstream operator to write to the file and keep it in meta file for later usage
+std::ostream& operator<<(std::ostream& os, const OrderMaker& myorder) {
+  os << myorder.numAtts << ' ';
+  for(int i=0; i<myorder.numAtts; ++i) os << myorder.whichAtts[i] << ' ';
+  for(int i=0; i<myorder.numAtts; ++i) os << myorder.whichTypes[i] << ' ';
+  os << std::endl;
+  return os;
+}
+
+//Overloading the stream operator to read from the file and keep it in our memory for later usage
+std::istream& operator>>(std::istream& is, OrderMaker& myorder) {
+  is >> myorder.numAtts;
+  for(int i=0; i<myorder.numAtts; ++i) 
+  	is >> myorder.whichAtts[i];
+  for(int i=0; i<myorder.numAtts; ++i) {
+    int t; 
+	is >> t;
+    myorder.whichTypes[i] = static_cast<Type>(t);
+  }
+  return is;
+}
 
 
 OrderMaker :: OrderMaker() {

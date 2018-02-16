@@ -1,12 +1,14 @@
 #ifndef COMPARISON_H
 #define COMPARISON_H
 
+#include <iostream>
 #include "Record.h"
 #include "Schema.h"
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
 
+using namespace std;
 
 // This stores an individual comparison that is part of a CNF
 class Comparison {
@@ -60,6 +62,8 @@ public:
 
 	// print to the screen
 	void Print ();
+	friend std::ostream& operator<<(std::ostream& os, const OrderMaker& myorder);
+  	friend std::istream& operator>>(std::istream& is, OrderMaker& myorder);
 };
 
 class Record;
