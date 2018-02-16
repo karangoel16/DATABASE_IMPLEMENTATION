@@ -9,11 +9,14 @@
 using namespace std;
 
 class BigQ {
-
+	Pipe &Pin, &Pout;
+	pthread_t threadRes;
 public:
 
 	BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen);
 	~BigQ ();
+	//this function will remain same for everyone
+	static void * result(void *bigQ);
 };
 
 #endif
