@@ -30,5 +30,7 @@ public:
     void incPage();
 	int getPages();
 	fType getType();
+	OrderMaker * getOrderMaker();
+	int getRunLength();
 };
 #endif

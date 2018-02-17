@@ -1,6 +1,7 @@
 #ifndef DBFILE_H
 #define DBFILE_H
 
+#pragma once
 #include <iostream>
 #include "HeapFile.h"
 #include "SortedFile.h"
@@ -23,5 +24,6 @@ public:
 	void Add (Record &addme);
 	int GetNext (Record &fetchme);
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
+	VirtualDBFile * getDBfile();
 };
 #endif

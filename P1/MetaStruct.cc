@@ -79,3 +79,11 @@ int MetaStruct::getPages(){
 fType MetaStruct::getType(){
     return mode;
 }
+
+OrderMaker * MetaStruct:: getOrderMaker(){
+    return myOrder;
+} 
+
+int MetaStruct::getRunLength(){
+    return runLength;
+}

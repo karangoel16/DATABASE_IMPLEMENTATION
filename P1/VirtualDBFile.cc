@@ -49,3 +49,7 @@ void VirtualDBFile::Load (Schema &myschema, const char *loadpath){
         Add(pull);
     }
 }
+
+File VirtualDBFile::getFile(){
+    return file;
+}

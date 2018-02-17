@@ -89,6 +89,7 @@ int DBFile::Open (const char *f_path) {
         case heap:dbfile = new HeapFile();
             break;
         case sorted:dbfile = new SortedFile();
+             dbfile->setAttribute(metaData.getOrderMaker(),metaData.getRunLength());
             break;
         case tree:
         default:NEED_TO_IMPLEMENT
@@ -155,4 +156,8 @@ int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
         return 0;
     }
     return dbfile->GetNext(fetchme,cnf,literal);
+}
+
+VirtualDBFile * DBFile::getDBfile(){
+    return dbfile;
 }

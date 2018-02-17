@@ -13,14 +13,6 @@ class VirtualDBFile{
 	Page writePage;
 	Page readPage;
 	int currentPage;
-    void check_write(){
-    	if(!writePage.empty())
-		{
-			int pos = !file.GetLength()? 0 : file.GetLength()-1;
-			file.AddPage(&writePage, pos);
-			writePage.EmptyItOut();       
-		}
-	}
     public:
     VirtualDBFile(){
         currentPage=0;
@@ -33,4 +25,14 @@ class VirtualDBFile{
 	void MoveFirst ();
 	int GetNext (Record &fetchme);
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
+	virtual void setAttribute(OrderMaker *o,int run) {};
+	File getFile();
+	void check_write(){
+    	if(!writePage.empty())
+		{
+			int pos = !file.GetLength()? 0 : file.GetLength()-1;
+			file.AddPage(&writePage, pos);
+			writePage.EmptyItOut();       
+		}
+	}
 };

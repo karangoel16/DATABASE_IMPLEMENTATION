@@ -1,5 +1,7 @@
 #ifndef HEAPFILE_H
 #define HEAPFILE_H
+
+#pragma once
 #include "VirtualDBFile.h"
 #include "Record.h"
 #include "DBFile.h"
