@@ -11,7 +11,7 @@
 class BigQ;
 
 class SortedFile: public VirtualDBFile{
-    static const size_t  BUFFERSIZE=128;
+    static const size_t  BUFFERSIZE=100;
     Pipe *in,*out;
     OrderMaker *myOrder;
     int runLength;

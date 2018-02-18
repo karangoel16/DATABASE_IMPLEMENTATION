@@ -55,26 +55,6 @@ public:
 };
 
 
-/*
-User Defined comparator to sort the records within the single block itself
-*/
-struct Comparator{
-	OrderMaker myOrder;
-	Comparator(OrderMaker o):myOrder(o){};
-	bool operator()(Record *p,Record *q){
-		ComparisonEngine comp;
-		return comp.Compare(p,q,&myOrder)<0?true:false;
-	}
-};
-
-struct Comparator1{
-	OrderMaker myOrder;
-	Comparator1(OrderMaker o):myOrder(o){};
-	bool operator()(pair<int,Record *> p,pair<int,Record *>q){
-		ComparisonEngine comp;
-		return comp.Compare(p.second,q.second,&myOrder)<0?true:false;
-	}
-};
 
 
 #endif
