@@ -36,7 +36,7 @@ void * BigQ::result(void *Big){
 	int count=0;
 	while((bigQ->Pin).Remove(&temp)){
 		char * temp_bits=temp.GetBits();
-		if(curLength+((int *)temp_bits)[0] < (PAGE_SIZE-4)*(bigQ->runLength)){
+		if(curLength+((int *)temp_bits)[0] < (PAGE_SIZE)*(bigQ->runLength)){
 			Record *rec = new Record();
 			rec->Consume(&temp);
 			result.push_back(rec);
@@ -76,7 +76,6 @@ void * BigQ::result(void *Big){
 	}
 	if(!result.empty()){
 		//this is in case last record is still not empty we will write these records on file
-		//bigQ->dbfile->getDBfile()->getFile().GetLength()==0?0:bigQ->dbfile->getDBfile()->getFile().GetLength()-1);
 		std::sort(result.begin(),result.end(),comp);
 		pageCounter.push_back(numPages);
 		for(auto i:result){
@@ -97,8 +96,8 @@ void * BigQ::result(void *Big){
 			writePage->EmptyItOut();
 			numPages++;
 		}
-		//for(auto i:result)
-		//	delete i;
+		for(auto i:result)
+			delete i;
 		result.clear();
 	}
 	pageCounter.push_back(numPages);
@@ -130,8 +129,8 @@ void * BigQ::result(void *Big){
 			pq.push(make_pair(top.first,temp_R));
 		}
 	}
-	//for(auto i:pageKeeper)
-	//	delete i;
+	for(auto i:pageKeeper)
+		delete i;
 	bigQ->file.Close();
 	remove((bigQ->tempFile).c_str());
 	remove((bigQ->tempFile+".meta").c_str());
