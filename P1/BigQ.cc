@@ -15,14 +15,16 @@ BigQ::~BigQ () {
 
 void * BigQ::result(void *Big){
 	BigQ *bigQ= (BigQ *)Big;
+	OrderMaker o1=bigQ->myOrder;
+	OrderMaker o2=bigQ->myOrder;
 	auto comp = [&](Record *p,Record *q){
 		ComparisonEngine comp;
-		return comp.Compare(p,q,&bigQ->myOrder)<0?true:false;
+		return comp.Compare(p,q,&o1)<0?true:false;
 	};
 
 	auto comp1 = [&](pair<int,Record *>p,pair<int,Record *>q){
 		ComparisonEngine comp;
-		return comp.Compare(p.second,q.second,&bigQ->myOrder)<0?false:true;
+		return comp.Compare(p.second,q.second,&o2)<0?false:true;
 	};
 	
 	Record temp;
@@ -34,7 +36,7 @@ void * BigQ::result(void *Big){
 	int count=0;
 	while((bigQ->Pin).Remove(&temp)){
 		char * temp_bits=temp.GetBits();
-		if(curLength+((int *)temp_bits)[0] < (PAGE_SIZE)*(bigQ->runLength)){
+		if(curLength+((int *)temp_bits)[0] < (PAGE_SIZE-4)*(bigQ->runLength)){
 			Record *rec = new Record();
 			rec->Consume(&temp);
 			result.push_back(rec);
@@ -54,6 +56,13 @@ void * BigQ::result(void *Big){
         			writePage->Append(i);
 					numPages++;
     			}
+			}
+			if(!writePage->empty()){
+				int pos = bigQ->file.GetLength();
+				pos=(pos==0?0:(pos-1)); 
+				bigQ->file.AddPage(writePage,pos);
+				writePage->EmptyItOut();
+				numPages++;
 			}
 			//for(auto i:result)
 			//	delete i;
@@ -93,7 +102,6 @@ void * BigQ::result(void *Big){
 		result.clear();
 	}
 	pageCounter.push_back(numPages);
-	std::cout<<pageCounter.size()<<"\n";
 	vector<Page *> pageKeeper;
 	priority_queue<pair<int, Record*>, vector<pair<int, Record*>>,decltype( comp1 ) > pq(comp1);
 	for(int i=0;i<pageCounter.size()-1;i++ ){
