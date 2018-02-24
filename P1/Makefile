@@ -6,11 +6,11 @@ ifdef linux
 tag = -n
 endif
 
-test.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o BigQ.o Pipe.o ComparisonEngine.o HeapFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o BigQ.o SortedFile.o test.o
-	$(CC) -D F_DEBUG -o test.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o -lfl -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
+a1-test.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o BigQ.o Pipe.o ComparisonEngine.o HeapFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o BigQ.o SortedFile.o a1-test.o
+	$(CC) -D F_DEBUG -o a1-test.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o a1-test.o -lfl -lpthread
 	
-test1.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o HeapFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test1.o
-	$(CC) -D F_DEBUG -o test1.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test1.o -lfl -I /usr/include/gtest/ -L /usr/lib/ -lgtest -lgtest_main -lpthread
+test.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o HeapFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o
+	$(CC) -D F_DEBUG -o test.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o -lfl -lpthread
 
 main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o
 	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o -lfl
@@ -18,11 +18,12 @@ main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o 
 MetaStruct.o: MetaStruct.cc
 	$(CC) -g -c MetaStruct.cc
 
+a1-test.o: a1-test.cc
+	$(CC) -g -c a1-test.cc
+
 test.o: test.cc
 	$(CC) -g -c test.cc
 
-test1.o: test.cc
-	$(CC) -g -c test1.cc
 
 main.o: main.cc
 	$(CC) -g -c main.cc
@@ -76,4 +77,4 @@ clean:
 	rm -f lex.yy.c
 	rm -f y.tab.h
 
-all: test.out test1.out
+all: test.out a1-test.out
