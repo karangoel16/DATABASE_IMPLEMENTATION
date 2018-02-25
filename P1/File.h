@@ -77,7 +77,6 @@ public:
 
 	// closes the file and returns the file length (in number of pages)
 	int Close ();
-
 };
 
 

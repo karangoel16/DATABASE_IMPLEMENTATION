@@ -64,8 +64,8 @@ void * BigQ::result(void *Big){
 				writePage->EmptyItOut();
 				numPages++;
 			}
-			//for(auto i:result)
-			//	delete i;
+			for(auto i:result)
+				delete i;
 			result.clear();
 			Record *rec = new Record();
 			rec->Consume(&temp);
@@ -111,16 +111,16 @@ void * BigQ::result(void *Big){
 		pq.push(make_pair(i,temp_R));
 		pageKeeper.push_back(temp_P);
 	}
-	vector<int> runcur(pageCounter);
+	vector<int> pageChecker(pageCounter);
 	while(!pq.empty()){
 		auto top=pq.top();
 		bigQ->Pout.Insert(top.second);
 		pq.pop();
 		Record *temp_R=new Record();
 		if(!pageKeeper[top.first]->GetFirst(temp_R)){
-			if(++runcur[top.first]<pageCounter[top.first+1]){
+			if(++pageChecker[top.first]<pageCounter[top.first+1]){
 				pageKeeper[top.first]->EmptyItOut();
- 				bigQ->file.GetPage(pageKeeper[top.first], runcur[top.first]);
+ 				bigQ->file.GetPage(pageKeeper[top.first], pageChecker[top.first]);
  				pageKeeper[top.first]->GetFirst(temp_R);
 				pq.push(make_pair(top.first,temp_R));
  			}
