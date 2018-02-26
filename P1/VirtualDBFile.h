@@ -20,7 +20,7 @@ class VirtualDBFile{
     friend class DBFile;
     virtual void Add (Record &addme){};
     int Create (const char *fpath, fType file_type, void *startup);
-	int Close ();
+	virtual int Close ();
 	void Load (Schema &myschema, const char *loadpath);
 	void MoveFirst ();
 	int GetNext (Record &fetchme);

@@ -26,7 +26,6 @@ void * BigQ::result(void *Big){
 		ComparisonEngine comp;
 		return comp.Compare(p.second,q.second,&o2)<0?false:true;
 	};
-	
 	Record temp;
 	Page *writePage=new Page();
 	size_t curLength=0;
@@ -131,8 +130,8 @@ void * BigQ::result(void *Big){
 	}
 	for(auto i:pageKeeper)
 		delete i;
+	bigQ->Pout.ShutDown ();
 	bigQ->file.Close();
 	remove((bigQ->tempFile).c_str());
 	remove((bigQ->tempFile+".meta").c_str());
-	bigQ->Pout.ShutDown ();
 }

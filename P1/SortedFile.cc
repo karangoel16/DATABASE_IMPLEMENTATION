@@ -17,6 +17,8 @@ void SortedFile::setAttribute(OrderMaker *o,int run){
     myOrder=o;
     runLength=run;
     bigQ=new BigQ(*in,*out,*myOrder,runLength);
+    int rs = pthread_create(&threadres, NULL, helper, (void *)this);
+    //pthread_join (threadres, NULL);
 }
 
 

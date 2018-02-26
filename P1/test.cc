@@ -17,7 +17,6 @@ int add_data (FILE *src, int numrecs, int &res) {
 		if (proc == xx) cerr << "\t ";
 		if (proc % xx == 0) cerr << ".";
 	}
-
 	dbfile.Close ();
 	return proc;
 }
