@@ -16,18 +16,7 @@ class SortedFile: public VirtualDBFile{
     int runLength;
     pthread_t threadres;
     BigQ *bigQ;
-    public:
-    Pipe *in,*out;
-    SortedFile();
-    int Close () override {
-        Record rec;
-        in->ShutDown();
-        pthread_join (threadres, NULL);
-        check_write();
-        file.Close();
-        return 1;
-    }
-    static void * helper(void *args){
+        static void * helper(void *args){
         SortedFile * sb=(SortedFile *)args;
         Record rec;
         while(sb->out->Remove(&rec)){
@@ -40,8 +29,14 @@ class SortedFile: public VirtualDBFile{
             }
         }
     }
+    public:
+    Pipe *in,*out;
+    SortedFile();
+    int Close () override;
+	int GetNext (Record &fetchme, CNF &cnf, Record &literal) override;
     void Add (Record &addme) override;
     void setAttribute(OrderMaker *o,int run) override;
+    int binarySearch(Record& fetchme, OrderMaker& queryorder, Record& literal, OrderMaker& cnforder, ComparisonEngine& cmp);
 };
 
 #endif

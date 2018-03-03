@@ -10,12 +10,13 @@
 
 using namespace std;
 
+class CNF;
 // This stores an individual comparison that is part of a CNF
 class Comparison {
 
 	friend class ComparisonEngine;
 	friend class CNF;
-
+	friend class OrderMaker; 
 	Target operand1;
 	int whichAtt1;
 	Target operand2;
@@ -42,26 +43,26 @@ class Schema;
 // This structure encapsulates a sort order for records
 class OrderMaker {
 
+
+
+public:
 	friend class ComparisonEngine;
 	friend class CNF;
-
+	
 	int numAtts;
-
 	int whichAtts[MAX_ANDS];
 	Type whichTypes[MAX_ANDS];
 
-public:
-	
-
 	// creates an empty OrdermMaker
 	OrderMaker();
-
+	static void queryOrderMaker(OrderMaker &myOrder, CNF &cnf, OrderMaker &queryorder, OrderMaker &cnforder);
 	// create an OrderMaker that can be used to sort records
 	// based upon ALL of their attributes
 	OrderMaker(Schema *schema);
 
 	// print to the screen
-	void Print ();
+	void Print (); 
+	//This is done to create input and output stream of the class so that we can write the order maker in
 	friend std::ostream& operator<<(std::ostream& os, const OrderMaker& myorder);
   	friend std::istream& operator>>(std::istream& is, OrderMaker& myorder);
 };
@@ -74,7 +75,7 @@ class Record;
 class CNF {
 
 	friend class ComparisonEngine;
-
+	friend class OrderMaker; 
 	Comparison orList[MAX_ANDS][MAX_ORS];
 	
 	int orLens[MAX_ANDS];

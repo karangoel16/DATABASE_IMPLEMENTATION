@@ -634,4 +634,33 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 	remove("hkljdfgkSDFSDF");
 }
 
-
+void OrderMaker::queryOrderMaker(OrderMaker &myOrder, CNF &query, OrderMaker &queryorder, OrderMaker &cnforder){
+	queryorder.numAtts=cnforder.numAtts=0;
+	for(int i=0;i<myOrder.numAtts;i++){
+		int att=myOrder.whichAtts[i];
+		Type type=myOrder.whichTypes[i];
+		int flag=-1;
+		for(int j=0;j<query.numAnds;j++){
+			auto clause = query.orList[i];
+			int orLens = query.orLens[i];
+			if(orLens == 1){
+				Comparison cmp = clause[0];
+				if (cmp.op == Equals && (((cmp.whichAtt1==att) && (cmp.operand2==Literal)) ||(cmp.whichAtt2==att) && (cmp.operand1==Literal))){
+					flag = j;
+					break;
+				}
+			}
+		}
+		if(flag>=0){
+			queryorder.whichAtts[queryorder.numAtts]= att;
+			queryorder.whichTypes[queryorder.numAtts]= type;
+			cnforder.whichAtts[cnforder.numAtts]=flag;
+			cnforder.whichTypes[cnforder.numAtts]= type;
+			//++queryorder.numAtts;
+			//++cnforder.numAtts;
+		}
+		else{
+			return ;
+		}
+	}
+}

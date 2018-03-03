@@ -24,7 +24,7 @@ class VirtualDBFile{
 	void Load (Schema &myschema, const char *loadpath);
 	void MoveFirst ();
 	int GetNext (Record &fetchme);
-	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
+	virtual int GetNext (Record &fetchme, CNF &cnf, Record &literal);
 	virtual void setAttribute(OrderMaker *o,int run) {};
 	File getFile();
 	void check_write(){
