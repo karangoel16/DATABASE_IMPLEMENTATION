@@ -12,8 +12,8 @@ a1-test.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o BigQ.o Pi
 a2-test.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o HeapFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o a2-test.o
 	$(CC) -D F_DEBUG -o a2-test.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o a2-test.o -lfl -lpthread
 
-test.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o HeapFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o
-	$(CC) -D F_DEBUG -o test.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o test.o -lfl -lpthread
+a22.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o HeapFile.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o a22.o
+	$(CC) -D F_DEBUG -o a22.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o MetaStruct.o a22.o -lfl -lpthread
 
 main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o
 	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o -lfl
@@ -21,8 +21,8 @@ main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o 
 MetaStruct.o: MetaStruct.cc
 	$(CC) -g -c MetaStruct.cc
 
-test.o: test.cc
-	$(CC) -g -c test.cc
+a22.o: a22.cc
+	$(CC) -g -c a22.cc
 
 a1-test.o: a1-test.cc
 	$(CC) -g -c a1-test.cc
@@ -83,4 +83,4 @@ clean:
 	rm -f lex.yy.c
 	rm -f y.tab.h
 
-all: a2-test.out a1-test.out test.out
+all: a2-test.out a1-test.out a22.out
