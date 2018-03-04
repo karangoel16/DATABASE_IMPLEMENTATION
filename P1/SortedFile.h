@@ -36,7 +36,7 @@ class SortedFile: public VirtualDBFile{
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal) override;
     void Add (Record &addme) override;
     void setAttribute(OrderMaker *o,int run) override;
-    int binarySearch(Record& fetchme, OrderMaker& queryorder, Record& literal, OrderMaker& cnforder, ComparisonEngine& cmp);
+    int BinarySearch(Record& fetchme, OrderMaker& queryorder, Record& literal, OrderMaker& cnforder, ComparisonEngine& cmp);
 };
 
 #endif

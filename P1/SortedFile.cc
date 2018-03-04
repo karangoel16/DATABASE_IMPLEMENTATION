@@ -31,9 +31,9 @@ int SortedFile::Close () {
 
 int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
   OrderMaker queryorder, cnforder;
-  OrderMaker::queryOrderMaker(*myOrder, cnf, queryorder, cnforder);
+  OrderMaker::QueryOrderMaker(*myOrder, cnf, queryorder, cnforder);
   ComparisonEngine cmp;
-  if (!binarySearch(fetchme, queryorder, literal, cnforder, cmp)) return 0;
+  if (!BinarySearch(fetchme, queryorder, literal, cnforder, cmp)) return 0;
   do {
     if (cmp.Compare(&fetchme, &queryorder, &literal, &cnforder)) return 0;
     if (cmp.Compare(&fetchme, &literal, &cnf)) return 1;
@@ -42,7 +42,7 @@ int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
   return VirtualDBFile::GetNext(fetchme,cnf,literal);
 };
 
-int SortedFile::binarySearch(Record& fetchme, OrderMaker& queryorder, Record& literal, OrderMaker& cnforder, ComparisonEngine& cmp) {
+int SortedFile::BinarySearch(Record& fetchme, OrderMaker& queryorder, Record& literal, OrderMaker& cnforder, ComparisonEngine& cmp) {
   if (!VirtualDBFile::GetNext(fetchme)) 
     return 0;
   int result = cmp.Compare(&fetchme, &queryorder, &literal, &cnforder);

@@ -55,7 +55,7 @@ public:
 
 	// creates an empty OrdermMaker
 	OrderMaker();
-	static void queryOrderMaker(OrderMaker &myOrder, CNF &cnf, OrderMaker &queryorder, OrderMaker &cnforder);
+	static void QueryOrderMaker(OrderMaker &myOrder, CNF &cnf, OrderMaker &queryorder, OrderMaker &cnforder);
 	// create an OrderMaker that can be used to sort records
 	// based upon ALL of their attributes
 	OrderMaker(Schema *schema);
