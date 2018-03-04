@@ -634,7 +634,7 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 	remove("hkljdfgkSDFSDF");
 }
 
-void OrderMaker::queryOrderMaker(OrderMaker &myOrder, CNF &query, OrderMaker &queryorder, OrderMaker &cnforder){
+void OrderMaker::QueryOrderMaker(OrderMaker &myOrder, CNF &query, OrderMaker &queryorder, OrderMaker &cnforder){
 	queryorder.numAtts=cnforder.numAtts=0;
 	for(int i=0;i<myOrder.numAtts;i++){
 		int att=myOrder.whichAtts[i];
