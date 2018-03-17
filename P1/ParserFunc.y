@@ -1,7 +1,8 @@
  
 %{
 
-	#include "ParseTree.h" 
+	#include "ParseTree.h"
+    #include "ParseFunc.h"
 	#include <stdio.h>
 	#include <string.h>
 	#include <stdlib.h>
