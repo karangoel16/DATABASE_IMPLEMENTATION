@@ -52,7 +52,7 @@ struct AndList {
 	struct AndList *rightAnd;
 
 };
-
+/*
 struct FuncOperand {
 
 	// this tells us the type of the operand: FLOAT, INT, STRING...
@@ -73,6 +73,5 @@ struct FuncOperator {
 	struct FuncOperator *right;	
 
 };
-
+*/
 #endif
-
