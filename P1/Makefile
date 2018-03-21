@@ -7,7 +7,7 @@ tag = -n
 endif
 
 test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o test.o -lfl -lpthread
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o Pipe.o BigQ.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o RelOp.o test.o -lfl -lpthread
 
 a1-test.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o BigQ.o Pipe.o ComparisonEngine.o Function.o HeapFile.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o BigQ.o SortedFile.o a1-test.o
 	$(CC) -D F_DEBUG -o a1-test.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Function.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o a1-test.o -lfl -lpthread

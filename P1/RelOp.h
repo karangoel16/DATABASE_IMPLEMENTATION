@@ -1,33 +1,37 @@
 #ifndef REL_OP_H
 #define REL_OP_H
-
+#pragma ones
 #include "Pipe.h"
 #include "DBFile.h"
 #include "Record.h"
 #include "Function.h"
-
+#include <pthread.h>
+#include <iostream>
+#include <cstdlib>
+using namespace std;
 class RelationalOp {
+	
 	public:
 	// blocks the caller until the particular relational operator 
 	// has run to completion
-	virtual void WaitUntilDone () = 0;
+	void WaitUntilDone (){
+		pthread_join(worker,NULL);
+	}
 
 	// tell us how much internal memory the operation can use
 	virtual void Use_n_Pages (int n) = 0;
+	pthread_t worker;
+
+	//http://man7.org/linux/man-pages/man3/pthread_create.3.html
+	static int create_join_thread(pthread_t *thread,void *(*start_routine)(void *),void * args);
 };
 
 class SelectFile : public RelationalOp { 
 
-	private:
-	// pthread_t thread;
-	// Record *buffer;
-
+	static void* thread_work(void* arg);
 	public:
-
 	void Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal);
-	void WaitUntilDone ();
-	void Use_n_Pages (int n);
-
+	void Use_n_Pages (int n){};
 };
 
 class SelectPipe : public RelationalOp {

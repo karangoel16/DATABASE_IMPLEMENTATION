@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <math.h>
-
+#include "RelOp.h"
 #include "Function.h"
 #include "Pipe.h"
 #include "DBFile.h"
@@ -192,7 +192,7 @@ void setup () {
 	cout << " tpch files dir: \t" << tpch_dir << endl;
 	cout << " heap files dir: \t" << dbfile_dir << endl;
 	cout << " \n\n";
-
+	
 	s = new relation (supplier, new Schema (catalog_path, supplier), dbfile_dir);
 	p = new relation (part, new Schema (catalog_path, part), dbfile_dir);
 	ps = new relation (partsupp, new Schema (catalog_path, partsupp), dbfile_dir);

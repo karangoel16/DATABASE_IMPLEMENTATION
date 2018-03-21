@@ -1,6 +1,5 @@
 #include "test.h"
 #include "BigQ.h"
-#include "RelOp.h"
 #include <pthread.h>
 
 Attribute IA = {"int", Int};
@@ -96,10 +95,8 @@ void q1 () {
 
 	char *pred_ps = "(ps_supplycost < 1.03)";
 	init_SF_ps (pred_ps, 100);
-
 	SF_ps.Run (dbf_ps, _ps, cnf_ps, lit_ps);
 	SF_ps.WaitUntilDone ();
-
 	int cnt = clear_pipe (_ps, ps->schema (), true);
 	cout << "\n\n query1 returned " << cnt << " records \n";
 
