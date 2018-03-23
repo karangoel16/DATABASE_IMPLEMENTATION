@@ -5,6 +5,8 @@
 #define MAX_ANDS 20
 #define MAX_ORS 20
 
+#define RUNLEN 5
+
 #define PAGE_SIZE 131072
 
 #define NEED_TO_IMPLEMENT std::cout<<"Need to implement"<<"\n";

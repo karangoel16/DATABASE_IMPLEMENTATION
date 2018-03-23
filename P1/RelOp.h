@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <sstream>
+#include "Defs.h"
 
 using namespace std;
 class RelationalOp {
@@ -62,11 +63,13 @@ class Sum : public RelationalOp {
 	void Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe);
 };
 class GroupBy : public RelationalOp {
+	static void* thread_work(void* arg);
 	public:
-	void Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe) { }
+	void Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe);
 };
 class WriteOut : public RelationalOp {
+	static void* thread_work(void* arg);
 	public:
-	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema) { }
+	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema);
 };
 #endif
