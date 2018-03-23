@@ -80,7 +80,7 @@ int DBFile::Open (const char *f_path) {
     metaData = MetaStruct(f_path);
     if(!metaData.Open())
     {
-        std::cout<<"We had some error: E(1)\n";
+        std::cout<<"We had some error: E(1)\n"<<f_path<<"\n";
         return 0;
     }
     openFile=true;

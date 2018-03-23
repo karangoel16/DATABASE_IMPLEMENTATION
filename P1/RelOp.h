@@ -8,9 +8,12 @@
 #include <pthread.h>
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
+
 using namespace std;
 class RelationalOp {
-	
+	private:
+	int page;
 	public:
 	// blocks the caller until the particular relational operator 
 	// has run to completion
@@ -19,7 +22,9 @@ class RelationalOp {
 	}
 
 	// tell us how much internal memory the operation can use
-	virtual void Use_n_Pages (int n) = 0;
+	void Use_n_Pages (int n) {
+		page=n;
+	}
 	pthread_t worker;
 
 	//http://man7.org/linux/man-pages/man3/pthread_create.3.html
@@ -27,53 +32,41 @@ class RelationalOp {
 };
 
 class SelectFile : public RelationalOp { 
-
 	static void* thread_work(void* arg);
 	public:
 	void Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal);
-	void Use_n_Pages (int n){};
 };
 
 class SelectPipe : public RelationalOp {
+	static void* thread_work(void* arg);
 	public:
-	void Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
+	void Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal);
 };
 class Project : public RelationalOp { 
+	static void* thread_work(void* arg);
 	public:
-	void Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
+	void Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput);
 };
 class Join : public RelationalOp { 
 	public:
 	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
 };
 class DuplicateRemoval : public RelationalOp {
+	static void* thread_work(void* arg);
 	public:
-	void Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
+	void Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema);
 };
 class Sum : public RelationalOp {
+	static void* thread_work(void* arg);
 	public:
-	void Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
+	void Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe);
 };
 class GroupBy : public RelationalOp {
 	public:
 	void Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
 };
 class WriteOut : public RelationalOp {
 	public:
 	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
 };
 #endif

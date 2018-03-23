@@ -126,7 +126,7 @@ void q2 () {
 
 	Attribute att3[] = {IA, SA, DA};
 	Schema out_sch ("out_sch", numAttsOut, att3);
-	int cnt = clear_pipe (_p, p->schema (), true);
+	int cnt = clear_pipe (_out, &out_sch, true);
 
 	cout << "\n\n query2 returned " << cnt << " records \n";
 
@@ -136,7 +136,6 @@ void q2 () {
 // select sum (s_acctbal + (s_acctbal * 1.05)) from supplier;
 // expected output: 9.24623e+07
 void q3 () {
-
 	char *pred_s = "(s_suppkey = s_suppkey)";
 	init_SF_s (pred_s, 100);
 
@@ -161,6 +160,7 @@ void q3 () {
 
 	dbf_s.Close ();
 }
+
 
 
 // select sum (ps_supplycost) from supplier, partsupp 
@@ -369,7 +369,7 @@ int main (int argc, char *argv[]) {
 		setup ();
 		query = query_ptr [qindx - 1];
 		query ();
-		cleanup ();
+		//cleanup ();
 		cout << "\n\n";
 	}
 	else {
