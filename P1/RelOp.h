@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <sstream>
 #include "Defs.h"
+#include <vector>
 
 using namespace std;
 class RelationalOp {
@@ -49,8 +50,9 @@ class Project : public RelationalOp {
 	void Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput);
 };
 class Join : public RelationalOp { 
+	static void* thread_work(void* arg);
 	public:
-	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal) { }
+	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal);
 };
 class DuplicateRemoval : public RelationalOp {
 	static void* thread_work(void* arg);

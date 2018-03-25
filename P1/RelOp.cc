@@ -21,7 +21,7 @@ void sum(Pipe *inPipe,Pipe *outPipe, Function *func){
 struct Param4{
 	DBFile *dbfile;
 	Pipe *outPipe;
-	Pipe *inPipe;
+	Pipe *inPipe,*inPipe2;
 	CNF *cnf;
 	Record *literal;
 	Function *func;
@@ -81,7 +81,9 @@ void Sum::Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
 	args->inPipe=&inPipe;
 	args->outPipe=&outPipe;
 	args->func=&computeMe;
-	create_join_thread(&worker,thread_work,(void *)args);
+	if(create_join_thread(&worker,thread_work,(void *)args)){
+		std::cout<<"Some issue with thread creation here\n";
+	}
 }
 
 void *Sum::thread_work(void *args){
@@ -94,7 +96,9 @@ void DuplicateRemoval::Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
 	args->inPipe=&inPipe;
 	args->outPipe=&outPipe;
 	args->mySchema=&mySchema;
-	create_join_thread(&worker,thread_work,(void *)args);
+	if(create_join_thread(&worker,thread_work,(void *)args)){
+		std::cout<<"Some issue with thread creation here\n";
+	}
  }
 
 //Duplicate needs to be done
@@ -132,7 +136,9 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
 	args->keepMe=keepMe;
 	args->numAttsInput=numAttsInput;
 	args->numAttsOutput=numAttsOutput;
-	create_join_thread(&worker,thread_work,(void *)args);
+	if(create_join_thread(&worker,thread_work,(void *)args)){
+		std::cout<<"Some issue with thread creation here\n";
+	}
  }
 
  void* Project::thread_work(void* args){
@@ -207,7 +213,9 @@ void WriteOut::Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
 	args->inPipe = &inPipe;
 	args->file = outFile;
 	args->mySchema = &mySchema;
-	create_join_thread(&worker,thread_work,(void *)args);
+	if(create_join_thread(&worker,thread_work,(void *)args)){
+		std::cout<<"Some issue with thread creation here\n";
+	}
 }
 
 void* WriteOut::thread_work(void* args){
@@ -220,37 +228,52 @@ void* WriteOut::thread_work(void* args){
 		fprintf(arg->file, "%d: ", cnt++);
 		char *bits = rec.bits;
 		for (int i = 0; i < n; i++) {
-
 			fprintf(arg->file, "%s",atts[i].name);
-
 			int pointer = ((int *) bits)[i + 1];
-
 			fprintf(arg->file, "[");
-
-			// first is integer
 			if (atts[i].myType == Int) {
 				int *myInt = (int *) &(bits[pointer]);
 				fprintf(arg->file, "%d",*myInt);
-
-			// then is a double
 			} else if (atts[i].myType == Double) {
 				double *myDouble = (double *) &(bits[pointer]);
 				fprintf(arg->file, "%f", *myDouble);
-
-			// then is a character string
 			} else if (atts[i].myType == String) {
 				char *myString = (char *) &(bits[pointer]);
 				fprintf(arg->file, "%s", myString);
 			}
-
 			fprintf(arg->file, "]");
-
-			// print out a comma as needed to make things pretty
 			if (i != n - 1) {
 				fprintf(arg->file, ", ");
 			}
 		}
-
 		fprintf(arg->file, "\n");
 	}
 }
+
+void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal){
+	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	args->inPipe = &inPipeL;
+	args->inPipe2 = &inPipeR;
+	args->cnf=&selOp;
+	args->literal=&literal;
+	args->outPipe=&outPipe;
+	if(create_join_thread(&worker,thread_work,(void *)args)){
+		std::cout<<"Some issue with thread creation here\n";
+	}
+}
+
+ void* Join::thread_work(void* args){
+	struct Param4 *arg = (struct Param4 *)(args); 
+	OrderMaker orderL;
+	OrderMaker orderR;
+	arg->cnf->GetSortOrders(orderL, orderR);
+	if(orderL.numAtts && orderR.numAtts && orderL.numAtts == orderR.numAtts) {
+		Pipe pipeL(100), pipeR(100);
+		BigQ *bigQL = new BigQ(*(arg->inPipe), pipeL, orderL, RUNLEN);
+		BigQ *bigQR = new BigQ(*(arg->inPipe2), pipeR, orderR, RUNLEN);
+		vector<Record *> vectorL;
+		vector<Record *> vectorR;
+	}
+	arg->outPipe->ShutDown();
+ }
+
