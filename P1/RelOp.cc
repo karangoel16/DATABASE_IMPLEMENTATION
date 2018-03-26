@@ -40,7 +40,7 @@ void SelectFile::Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal
 	args->outPipe=&outPipe;
 	args->cnf=&selOp;
 	args->literal=&literal;
-	if(create_join_thread(&worker,thread_work,(void *)args)){
+	if(pthread_create(&worker, NULL, thread_work, (void *)args)){
 		std::cout<<"Some issue with thread creation here\n";
 	}
 }
@@ -61,7 +61,7 @@ void SelectPipe::Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal){
 	args->outPipe=&outPipe;
 	args->cnf=&selOp;
 	args->literal=&literal;
-	if(create_join_thread(&worker,thread_work,(void *)args)){
+	if(pthread_create(&worker, NULL, thread_work, (void *)args)){
 		std::cout<<"Some issue with thread creation here\n";
 	}
 }
@@ -81,7 +81,7 @@ void Sum::Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
 	args->inPipe=&inPipe;
 	args->outPipe=&outPipe;
 	args->func=&computeMe;
-	if(create_join_thread(&worker,thread_work,(void *)args)){
+	if(pthread_create(&worker, NULL, thread_work, (void *)args)){
 		std::cout<<"Some issue with thread creation here\n";
 	}
 }
@@ -96,7 +96,7 @@ void DuplicateRemoval::Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
 	args->inPipe=&inPipe;
 	args->outPipe=&outPipe;
 	args->mySchema=&mySchema;
-	if(create_join_thread(&worker,thread_work,(void *)args)){
+	if(pthread_create(&worker, NULL, thread_work, (void *)args)){
 		std::cout<<"Some issue with thread creation here\n";
 	}
  }
@@ -109,22 +109,15 @@ void* DuplicateRemoval::thread_work(void* args){
   	BigQ biq(*arg->inPipe, sorted, sortOrder, RUNLEN);
   	Record cur, next;
   	ComparisonEngine cmp;
-	int c=0;
   	if(sorted.Remove(&cur)) {
     	while(sorted.Remove(&next))
       		if(cmp.Compare(&cur, &next, &sortOrder)) {
         		arg->outPipe->Insert(&cur);
-				std::cout<<c++<<endl;
         		cur.Consume(&next);
       		}
     	arg->outPipe->Insert(&cur);
   	}
   	arg->outPipe->ShutDown();
-}
-
-int RelationalOp::create_join_thread(pthread_t *thread,void *(*start_routine) (void *), void *arg){
-  	int rc = pthread_create(thread, NULL, start_routine, arg);
-	return rc;
 }
 
 
@@ -135,7 +128,7 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
 	args->keepMe=keepMe;
 	args->numAttsInput=numAttsInput;
 	args->numAttsOutput=numAttsOutput;
-	if(create_join_thread(&worker,thread_work,(void *)args)){
+	if(pthread_create(&worker, NULL, thread_work, (void *)args)){
 		std::cout<<"Some issue with thread creation here\n";
 	}
  }
@@ -157,15 +150,15 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
 	args->outPipe = &outPipe;
 	args->groupAtts = &groupAtts;
 	args->func = &computeMe;
-	std::cout<<"here";
-	create_join_thread(&worker,thread_work,(void *)args);
+	if(pthread_create(&worker, NULL, thread_work, (void *)args)){
+		std::cout<<"Some issue with thread creation here\n";
+	}
 }
 
 void* GroupBy::thread_work(void* args){
 	struct Param4 *arg = (struct Param4 *)(args);  
 	Pipe sortPipe(100);
 	BigQ *bigQ = new BigQ(*(arg->inPipe), sortPipe, *(arg->groupAtts), RUNLEN);
-
 	int ir;  double dr;
 	Type type;
 	Attribute DA = {"double", Double};
@@ -173,9 +166,9 @@ void* GroupBy::thread_work(void* args){
 	attr.name = (char *)"sum";
 	attr.myType = type;
 	Schema *schema = new Schema ((char *)"dummy", 1, &attr);
-	Attribute s_nationkey = {"s_nationkey", Int};
-	Attribute outatt[] = {DA, s_nationkey};
-    Schema out_sch("out_sch", 2, outatt);
+// Attribute s_nationkey = {"s_nationkey", Int};
+// Attribute outatt[] = {DA, s_nationkey};
+// Schema out_sch("out_sch", 2, outatt);
 	int numAttsToKeep = arg->groupAtts->numAtts + 1;
 	int *attsToKeep = new int[numAttsToKeep];
 	attsToKeep[0] = 0; 
@@ -191,12 +184,11 @@ void* GroupBy::thread_work(void* args){
 			type = arg->func->Apply(*tmpRcd, ir, dr);
 			double sum=0;
 			sum += (ir+dr);
-
 			Record *r = new Record();
 			Record *lastRcd = new Record;
 			lastRcd->Copy(tmpRcd);
 			while(sortPipe.Remove(r)) {
-				if(cmp.Compare(lastRcd, r, arg->groupAtts) == 0){ //same group
+				if(!cmp.Compare(lastRcd, r, arg->groupAtts)){
 					type = arg->func->Apply(*r, ir, dr);
 					sum += (ir+dr);
 				} else {
@@ -209,7 +201,6 @@ void* GroupBy::thread_work(void* args){
 			ss <<sum <<"|";
 			Record *sumRcd = new Record();
 			sumRcd->ComposeRecord(schema, ss.str().c_str());
-
 			Record *tuple = new Record;
 			tuple->MergeRecords(sumRcd, lastRcd, 1, arg->groupAtts->numAtts, attsToKeep,  numAttsToKeep, 1);
 			arg->outPipe->Insert(tuple);
@@ -222,7 +213,7 @@ void WriteOut::Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
 	args->inPipe = &inPipe;
 	args->file = outFile;
 	args->mySchema = &mySchema;
-	if(create_join_thread(&worker,thread_work,(void *)args)){
+	if(pthread_create(&worker, NULL, thread_work, (void *)args)){
 		std::cout<<"Some issue with thread creation here\n";
 	}
 }
@@ -266,10 +257,9 @@ void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record 
 	args->cnf=&selOp;
 	args->literal=&literal;
 	args->outPipe=&outPipe;
-	if(create_join_thread(&worker,thread_work,(void *)args)){
+	if(pthread_create(&worker, NULL, thread_work, (void *)args)){
 		std::cout<<"Some issue with thread creation here\n";
 	}
-
 }
 
 void* Join::thread_work(void* args){
@@ -371,7 +361,6 @@ void* Join::thread_work(void* args){
 					break;
 				}
 			}
-			cout <<"sort join: " <<joinNum<<" join times: "<<num<<endl;
 		}
 	} 
 	else {
@@ -413,7 +402,6 @@ void* Join::thread_work(void* args){
 
 					rMore = false;
 					while(arg->inPipe2->Remove(rcdR)) {
-						//getting n-1 pages of records into vectorR
 						Record *copyMe = new Record();
 						copyMe->Copy(rcdR);
 						if(!pageR.Append(rcdR)) {
@@ -431,30 +419,26 @@ void* Join::thread_work(void* args){
 							vecR.push_back(copyMe);
 						}
 					}
-					// now we have the n-1 pages records from Right relation
-					dbFileL.MoveFirst(); //we should do arg in each iteration
-					//iterate all the tuples in Left
+					dbFileL.MoveFirst();
 					int fileRN = 0;
 					while(dbFileL.GetNext(*rcdL)) {
-						for(vector<Record*>::iterator it=vecR.begin(); it!=vecR.end(); it++) {
-							if(1 == comp.Compare(rcdL, *it, arg->literal, arg->cnf)) {
+						for(auto it:vecR) {
+							if(1 == comp.Compare(rcdL, it, arg->literal, arg->cnf)) {
 								//applied to the CNF, then join
 								joinNum++;
 								Record *jr = new Record();
 								Record *rr = new Record();
-								rr->Copy(*it);
+								rr->Copy(it);
 								jr->MergeRecords(rcdL, rr, leftAttr, rightAttr, attrToKeep, leftAttr+rightAttr, leftAttr);
 								arg->outPipe->Insert(jr);
 							}
 						}
 					}
-					cout <<"getting file records: " <<fileRN<<endl;
-					//clean up the vectorR
-					for(vector<Record *>::iterator it = vecR.begin(); it!=vecR.end(); it++) { \
-						if(!*it) { delete *it; } }\
+					for(auto it : vecR)
+						if(!it) 
+							 delete it;
 					vecR.clear();
 				}
-				cout <<"block join records: " <<joinNum<<endl;
 				dbFileL.Close();
 			}
 		}

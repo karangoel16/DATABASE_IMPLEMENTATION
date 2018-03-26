@@ -29,8 +29,6 @@ class RelationalOp {
 	}
 	pthread_t worker;
 
-	//http://man7.org/linux/man-pages/man3/pthread_create.3.html
-	static int create_join_thread(pthread_t *thread,void *(*start_routine)(void *),void * args);
 };
 
 class SelectFile : public RelationalOp { 
