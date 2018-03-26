@@ -123,7 +123,6 @@ void* DuplicateRemoval::thread_work(void* args){
 }
 
 int RelationalOp::create_join_thread(pthread_t *thread,void *(*start_routine) (void *), void *arg){
-	//this is to create joinable thread
   	int rc = pthread_create(thread, NULL, start_routine, arg);
 	return rc;
 }
@@ -158,56 +157,66 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
 	args->outPipe = &outPipe;
 	args->groupAtts = &groupAtts;
 	args->func = &computeMe;
+	std::cout<<"here";
 	create_join_thread(&worker,thread_work,(void *)args);
 }
 
 void* GroupBy::thread_work(void* args){
-	struct Param4 *arg = (struct Param4 *)(args); 
+	struct Param4 *arg = (struct Param4 *)(args);  
 	Pipe sortPipe(100);
 	BigQ *bigQ = new BigQ(*(arg->inPipe), sortPipe, *(arg->groupAtts), RUNLEN);
+
 	int ir;  double dr;
+	Type type;
 	Attribute DA = {"double", Double};
-	Schema sum_sch ("sum_sch", 1, &DA);
+	Attribute attr;
+	attr.name = (char *)"sum";
+	attr.myType = type;
+	Schema *schema = new Schema ((char *)"dummy", 1, &attr);
+	Attribute s_nationkey = {"s_nationkey", Int};
+	Attribute outatt[] = {DA, s_nationkey};
+    Schema out_sch("out_sch", 2, outatt);
 	int numAttsToKeep = arg->groupAtts->numAtts + 1;
 	int *attsToKeep = new int[numAttsToKeep];
 	attsToKeep[0] = 0; 
-	for(int i=1;i<=numAttsToKeep;i++)
-		attsToKeep[i]=arg->groupAtts->whichAtts[i-1];
+	for(int i = 1; i < numAttsToKeep; i++)
+		attsToKeep[i] = arg->groupAtts->whichAtts[i-1];
+
 	ComparisonEngine cmp;
-	Record tmpRcd;
-	while(sortPipe.Remove(&tmpRcd)){
-		bool flag=true;
-		while(flag){
-			flag=false;
+	Record *tmpRcd = new Record();
+	if(sortPipe.Remove(tmpRcd)) {
+		bool more = true;
+		while(more) {
+			more = false;
+			type = arg->func->Apply(*tmpRcd, ir, dr);
 			double sum=0;
-			arg->func->Apply(tmpRcd, ir, dr);
-			sum+=(ir+dr);
+			sum += (ir+dr);
+
 			Record *r = new Record();
 			Record *lastRcd = new Record;
-			lastRcd->Copy(&tmpRcd);
+			lastRcd->Copy(tmpRcd);
 			while(sortPipe.Remove(r)) {
-				if(cmp.Compare(lastRcd, r, arg->groupAtts) == 0){
-					arg->func->Apply(*r, ir, dr);
+				if(cmp.Compare(lastRcd, r, arg->groupAtts) == 0){ //same group
+					type = arg->func->Apply(*r, ir, dr);
 					sum += (ir+dr);
-				} 
-				else {
-					tmpRcd.Copy(r);
-					flag = true;
+				} else {
+					tmpRcd->Copy(r);
+					more = true;
 					break;
 				}
 			}
-			stringstream ss;
-			ss <<sum<<"|";
-			Record sumRcd;
-			sumRcd.ComposeRecord(&sum_sch, ss.str().c_str());
-			Record *tuple = new Record();
-			tuple->MergeRecords(&sumRcd, lastRcd, 1, arg->groupAtts->numAtts, attsToKeep,  numAttsToKeep, 1);
+			ostringstream ss;
+			ss <<sum <<"|";
+			Record *sumRcd = new Record();
+			sumRcd->ComposeRecord(schema, ss.str().c_str());
+
+			Record *tuple = new Record;
+			tuple->MergeRecords(sumRcd, lastRcd, 1, arg->groupAtts->numAtts, attsToKeep,  numAttsToKeep, 1);
 			arg->outPipe->Insert(tuple);
 		}
 	}
 	arg->outPipe->ShutDown();
 }
-
 void WriteOut::Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
 	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
 	args->inPipe = &inPipe;
@@ -260,9 +269,10 @@ void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record 
 	if(create_join_thread(&worker,thread_work,(void *)args)){
 		std::cout<<"Some issue with thread creation here\n";
 	}
+
 }
 
- void* Join::thread_work(void* args){
+void* Join::thread_work(void* args){
 	struct Param4 *arg = (struct Param4 *)(args); 
 	OrderMaker orderL;
 	OrderMaker orderR;
@@ -271,9 +281,183 @@ void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record 
 		Pipe pipeL(100), pipeR(100);
 		BigQ *bigQL = new BigQ(*(arg->inPipe), pipeL, orderL, RUNLEN);
 		BigQ *bigQR = new BigQ(*(arg->inPipe2), pipeR, orderR, RUNLEN);
-		vector<Record *> vectorL;
-		vector<Record *> vectorR;
-	}
-	arg->outPipe->ShutDown();
- }
+		vector<Record *> vecL;
+		vector<Record *> vecR;
+		Record *rcdLeft = new Record();
+		Record *rcdRight = new Record();
+		ComparisonEngine comp;
+		if(pipeL.Remove(rcdLeft) && pipeR.Remove(rcdRight)) {
+			int lAttr = ((int *) rcdLeft->bits)[1] / sizeof(int) -1;
+			int rAttr = ((int *) rcdRight->bits)[1] / sizeof(int) -1;
+			int totAttr = lAttr + rAttr;
+			int attrToKeep[totAttr];
+			for(int i = 0; i< lAttr; i++)
+				attrToKeep[i] = i;
+			for(int i = 0; i< rAttr; i++)
+				attrToKeep[i+lAttr] = i;
+			int joinNum;
+			bool leftOK=true, rightOK=true; //means that rcdL and rcdR are both ok
+			int num  =0;
+			while(leftOK && rightOK) {
+				leftOK=false; rightOK=false;
+				int cmpRst = comp.Compare(rcdLeft, &orderL, rcdRight, &orderR);
+				switch(cmpRst) {
+					case 0:{
+						num ++;
+						Record *rcd1 = new Record(); 
+						rcd1->Consume(rcdLeft);
+						Record *rcd2 = new Record(); 
+						rcd2->Consume(rcdRight);
+						vecL.push_back(rcd1);
+						vecR.push_back(rcd2);
+						//cout <<"vector size now: " <<vecL.size()<<" R: "<<vecR.size()<<endl;
+						while(pipeL.Remove(rcdLeft)) {
+							if(0 == comp.Compare(rcdLeft, rcd1, &orderL)) {
+								Record *cLMe = new Record();
+								cLMe->Consume(rcdLeft);
+								vecL.push_back(cLMe);
+							} else {
+								leftOK = true;
+								break;
+							}
+						}
+						while(pipeR.Remove(rcdRight)) {
+							if(0 == comp.Compare(rcdRight, rcd2, &orderR)) {
+								Record *cRMe = new Record();
+								cRMe->Consume(rcdRight);
+								vecR.push_back(cRMe);
+							} 
+							else {
+								rightOK = true;
+								break;
+							}
+						}
+						Record *lr = new Record(), *rr=new Record(), *jr = new Record();
+						for(auto itL :vecL) {
+							lr->Consume(itL);
+							for(auto itR: vecR) {
+								if( 1 == comp.Compare(lr, itR, arg->literal, arg->cnf)) {
+									joinNum++;
+									rr->Copy(itR);
+									jr->MergeRecords(lr, rr, lAttr, rAttr, attrToKeep, lAttr+rAttr, lAttr);
+									arg->outPipe->Insert(jr);
+								}
+							}
+						}
+						for(auto it:vecL) { 
+							if(!it) 
+							{ 
+								delete it; 
+							}
+						}
+						vecL.clear();
+						for(auto it : vecR) { 
+							if(!it) { 
+								delete it; 
+							} 
+						}
+						vecR.clear();
+						break;
+				}
+				case 1:
+					leftOK = true;
+					if(pipeR.Remove(rcdRight))
+						rightOK = true;
+					break;
+				case -1:
+					rightOK = true;
+					if(pipeL.Remove(rcdLeft))
+						leftOK = true;
+					break;
+				}
+			}
+			cout <<"sort join: " <<joinNum<<" join times: "<<num<<endl;
+		}
+	} 
+	else {
+			cout <<"block nested loops join"<<endl;
+			int n_pages = 10;
+			Record *rcdL = new Record;
+			Record *rcdR = new Record;
+			Page pageR;
+			DBFile dbFileL;
+				fType ft = heap;
+				dbFileL.Create((char*)"tmpL", ft, NULL);
+				dbFileL.MoveFirst();
 
+			int leftAttr, rightAttr, totalAttr, *attrToKeep;
+
+			if(arg->inPipe->Remove(rcdL) && arg->inPipe2->Remove(rcdR)) {
+				leftAttr = ((int *) rcdL->bits)[1] / sizeof(int) -1;
+				rightAttr = ((int *) rcdR->bits)[1] / sizeof(int) -1;
+				totalAttr = leftAttr + rightAttr;
+				attrToKeep = new int[totalAttr];
+				for(int i = 0; i< leftAttr; i++)
+					attrToKeep[i] = i;
+				for(int i = 0; i< rightAttr; i++)
+					attrToKeep[i+leftAttr] = i;
+				do {
+					dbFileL.Add(*rcdL);
+				}while(arg->inPipe->Remove(rcdL));
+				vector<Record *> vecR;
+				ComparisonEngine comp;
+
+				bool rMore = true;
+				int joinNum =0;
+				while(rMore) {
+					Record *first = new Record();
+					first->Copy(rcdR);
+					pageR.Append(rcdR);
+					vecR.push_back(first);
+					int rPages = 0;
+
+					rMore = false;
+					while(arg->inPipe2->Remove(rcdR)) {
+						//getting n-1 pages of records into vectorR
+						Record *copyMe = new Record();
+						copyMe->Copy(rcdR);
+						if(!pageR.Append(rcdR)) {
+							rPages += 1;
+							if(rPages >= n_pages -1) {
+								rMore = true;
+								break;
+							}
+							else {
+								pageR.EmptyItOut();
+								pageR.Append(rcdR);
+								vecR.push_back(copyMe);
+							}
+						} else {
+							vecR.push_back(copyMe);
+						}
+					}
+					// now we have the n-1 pages records from Right relation
+					dbFileL.MoveFirst(); //we should do arg in each iteration
+					//iterate all the tuples in Left
+					int fileRN = 0;
+					while(dbFileL.GetNext(*rcdL)) {
+						for(vector<Record*>::iterator it=vecR.begin(); it!=vecR.end(); it++) {
+							if(1 == comp.Compare(rcdL, *it, arg->literal, arg->cnf)) {
+								//applied to the CNF, then join
+								joinNum++;
+								Record *jr = new Record();
+								Record *rr = new Record();
+								rr->Copy(*it);
+								jr->MergeRecords(rcdL, rr, leftAttr, rightAttr, attrToKeep, leftAttr+rightAttr, leftAttr);
+								arg->outPipe->Insert(jr);
+							}
+						}
+					}
+					cout <<"getting file records: " <<fileRN<<endl;
+					//clean up the vectorR
+					for(vector<Record *>::iterator it = vecR.begin(); it!=vecR.end(); it++) { \
+						if(!*it) { delete *it; } }\
+					vecR.clear();
+				}
+				cout <<"block join records: " <<joinNum<<endl;
+				dbFileL.Close();
+			}
+		}
+	arg->outPipe->ShutDown();
+
+ }

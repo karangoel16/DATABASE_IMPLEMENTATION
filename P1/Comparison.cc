@@ -90,6 +90,14 @@ OrderMaker :: OrderMaker() {
 	numAtts = 0;
 }
 
+OrderMaker::OrderMaker(int numAtts,int val[],Type type[]){
+	this->numAtts=numAtts;
+	for(int i=0;i<numAtts;i++){
+		whichAtts[i]=val[i];
+		whichTypes[i]=type[i];
+	}
+}
+
 OrderMaker :: OrderMaker(Schema *schema) {
 	numAtts = 0;
 

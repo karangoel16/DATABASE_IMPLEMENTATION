@@ -59,7 +59,7 @@ public:
 	// create an OrderMaker that can be used to sort records
 	// based upon ALL of their attributes
 	OrderMaker(Schema *schema);
-
+	OrderMaker(int numAtts,int val[],Type type[]);
 	// print to the screen
 	void Print (); 
 	//This is done to create input and output stream of the class so that we can write the order maker in
