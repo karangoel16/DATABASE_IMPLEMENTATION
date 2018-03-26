@@ -18,7 +18,7 @@ void sum(Pipe *inPipe,Pipe *outPipe, Function *func){
 	outPipe->Insert(rcd);
 	outPipe->ShutDown();
 }
-struct Param4{
+struct Param{
 	DBFile *dbfile;
 	Pipe *outPipe;
 	Pipe *inPipe,*inPipe2;
@@ -35,7 +35,7 @@ struct Param4{
 
   
 void SelectFile::Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal) {
-	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	Param *args=static_cast<struct Param *>(malloc(sizeof(struct Param)));
 	args->dbfile=&inFile;
 	args->outPipe=&outPipe;
 	args->cnf=&selOp;
@@ -46,7 +46,7 @@ void SelectFile::Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal
 }
 
 void *SelectFile::thread_work(void *args){
-  struct Param4 *arg = (struct Param4 *)(args);                     
+  struct Param *arg = (struct Param *)(args);                     
   arg->dbfile->MoveFirst();
   Record next;
   int i=0;
@@ -56,7 +56,7 @@ void *SelectFile::thread_work(void *args){
 }
 
 void SelectPipe::Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal){
-	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	Param *args=static_cast<struct Param *>(malloc(sizeof(struct Param)));
 	args->inPipe=&inPipe;
 	args->outPipe=&outPipe;
 	args->cnf=&selOp;
@@ -67,17 +67,17 @@ void SelectPipe::Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal){
 }
 
 void* SelectPipe::thread_work(void* args){
-	struct Param4 *arg = (struct Param4 *)(args);     
-	ComparisonEngine cmp;
+	struct Param *arg = (struct Param *)(args);     
+	ComparisonEngine comp;
 	Record rec;
 	while(arg->inPipe->Remove(&rec))
-		if(cmp.Compare(&rec,arg->literal,arg->cnf))
+		if(comp.Compare(&rec,arg->literal,arg->cnf))
 			arg->outPipe->Insert(&rec);
 	arg->outPipe->ShutDown();
 }
 
 void Sum::Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
-	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	Param *args=static_cast<struct Param *>(malloc(sizeof(struct Param)));
 	args->inPipe=&inPipe;
 	args->outPipe=&outPipe;
 	args->func=&computeMe;
@@ -87,12 +87,12 @@ void Sum::Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
 }
 
 void *Sum::thread_work(void *args){
-	struct Param4 *arg = (struct Param4 *)(args);   
+	struct Param *arg = (struct Param *)(args);   
 	sum(arg->inPipe,arg->outPipe,arg->func);
 }
 
 void DuplicateRemoval::Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
-	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	Param *args=static_cast<struct Param *>(malloc(sizeof(struct Param)));
 	args->inPipe=&inPipe;
 	args->outPipe=&outPipe;
 	args->mySchema=&mySchema;
@@ -103,15 +103,15 @@ void DuplicateRemoval::Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
 
 //Duplicate needs to be done
 void* DuplicateRemoval::thread_work(void* args){
-	struct Param4 *arg = (struct Param4 *)(args);  
+	struct Param *arg = (struct Param *)(args);  
  	OrderMaker sortOrder(arg->mySchema);
   	Pipe sorted(100);
   	BigQ biq(*arg->inPipe, sorted, sortOrder, RUNLEN);
   	Record cur, next;
-  	ComparisonEngine cmp;
+  	ComparisonEngine comp;
   	if(sorted.Remove(&cur)) {
     	while(sorted.Remove(&next))
-      		if(cmp.Compare(&cur, &next, &sortOrder)) {
+      		if(comp.Compare(&cur, &next, &sortOrder)) {	
         		arg->outPipe->Insert(&cur);
         		cur.Consume(&next);
       		}
@@ -122,7 +122,7 @@ void* DuplicateRemoval::thread_work(void* args){
 
 
 void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput){
-	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	Param *args=static_cast<struct Param *>(malloc(sizeof(struct Param)));
 	args->inPipe=&inPipe;
 	args->outPipe=&outPipe;
 	args->keepMe=keepMe;
@@ -134,7 +134,7 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
  }
 
  void* Project::thread_work(void* args){
-	struct Param4 *arg = (struct Param4 *)(args);  
+	struct Param *arg = (struct Param *)(args);  
 	Record tmpRcd;
 	while(arg->inPipe->Remove(&tmpRcd)) {
 		tmpRcd.Project(arg->keepMe, arg->numAttsOutput, arg->numAttsInput);
@@ -145,7 +145,7 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
  }
 
  void GroupBy::Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe) {
-	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	Param *args=static_cast<struct Param *>(malloc(sizeof(struct Param)));
 	args->inPipe = &inPipe;
 	args->outPipe = &outPipe;
 	args->groupAtts = &groupAtts;
@@ -156,7 +156,7 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
 }
 
 void* GroupBy::thread_work(void* args){
-	struct Param4 *arg = (struct Param4 *)(args);  
+	struct Param *arg = (struct Param *)(args);  
 	Pipe sortPipe(100);
 	BigQ *bigQ = new BigQ(*(arg->inPipe), sortPipe, *(arg->groupAtts), RUNLEN);
 	int ir;  double dr;
@@ -175,7 +175,7 @@ void* GroupBy::thread_work(void* args){
 	for(int i = 1; i < numAttsToKeep; i++)
 		attsToKeep[i] = arg->groupAtts->whichAtts[i-1];
 
-	ComparisonEngine cmp;
+	ComparisonEngine comp;
 	Record *tmpRcd = new Record();
 	if(sortPipe.Remove(tmpRcd)) {
 		bool more = true;
@@ -188,7 +188,7 @@ void* GroupBy::thread_work(void* args){
 			Record *lastRcd = new Record;
 			lastRcd->Copy(tmpRcd);
 			while(sortPipe.Remove(r)) {
-				if(!cmp.Compare(lastRcd, r, arg->groupAtts)){
+				if(!comp.Compare(lastRcd, r, arg->groupAtts)){
 					type = arg->func->Apply(*r, ir, dr);
 					sum += (ir+dr);
 				} else {
@@ -209,7 +209,7 @@ void* GroupBy::thread_work(void* args){
 	arg->outPipe->ShutDown();
 }
 void WriteOut::Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
-	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	Param *args=static_cast<struct Param *>(malloc(sizeof(struct Param)));
 	args->inPipe = &inPipe;
 	args->file = outFile;
 	args->mySchema = &mySchema;
@@ -219,7 +219,7 @@ void WriteOut::Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
 }
 
 void* WriteOut::thread_work(void* args){
-	struct Param4 *arg = (struct Param4 *)(args); 
+	struct Param *arg = (struct Param *)(args); 
 	Attribute *atts = arg->mySchema->GetAtts();
 	int n = arg->mySchema->GetNumAtts();
 	Record rec;
@@ -251,7 +251,7 @@ void* WriteOut::thread_work(void* args){
 }
 
 void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal){
-	Param4 *args=static_cast<struct Param4 *>(malloc(sizeof(struct Param4)));
+	Param *args=static_cast<struct Param *>(malloc(sizeof(struct Param)));
 	args->inPipe = &inPipeL;
 	args->inPipe2 = &inPipeR;
 	args->cnf=&selOp;
@@ -263,7 +263,7 @@ void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record 
 }
 
 void* Join::thread_work(void* args){
-	struct Param4 *arg = (struct Param4 *)(args); 
+	struct Param *arg = (struct Param *)(args); 
 	OrderMaker orderL;
 	OrderMaker orderR;
 	arg->cnf->GetSortOrders(orderL, orderR);
@@ -272,9 +272,11 @@ void* Join::thread_work(void* args){
 		BigQ *bigQL = new BigQ(*(arg->inPipe), pipeL, orderL, RUNLEN);
 		BigQ *bigQR = new BigQ(*(arg->inPipe2), pipeR, orderR, RUNLEN);
 		vector<Record *> vecL;
-		vector<Record *> vecR;
 		Record *rcdLeft = new Record();
+
+		vector<Record *> vecR;
 		Record *rcdRight = new Record();
+		
 		ComparisonEngine comp;
 		if(pipeL.Remove(rcdLeft) && pipeR.Remove(rcdRight)) {
 			int lAttr = ((int *) rcdLeft->bits)[1] / sizeof(int) -1;
@@ -301,7 +303,7 @@ void* Join::thread_work(void* args){
 						vecL.push_back(rcd1);
 						vecR.push_back(rcd2);
 						while(pipeL.Remove(rcdLeft)) {
-							if(0 == comp.Compare(rcdLeft, rcd1, &orderL)) {
+							if(!comp.Compare(rcdLeft, rcd1, &orderL)) {
 								Record *cLMe = new Record();
 								cLMe->Consume(rcdLeft);
 								vecL.push_back(cLMe);
