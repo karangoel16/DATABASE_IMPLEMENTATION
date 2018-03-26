@@ -288,7 +288,7 @@ void* Join::thread_work(void* args){
 			for(int i = 0; i< rAttr; i++)
 				attrToKeep[i+lAttr] = i;
 			int joinNum;
-			bool leftOK=true, rightOK=true; //means that rcdL and rcdR are both ok
+			bool leftOK=true, rightOK=true;
 			int num  =0;
 			while(leftOK && rightOK) {
 				leftOK=false; rightOK=false;
