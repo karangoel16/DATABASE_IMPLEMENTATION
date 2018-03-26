@@ -300,7 +300,6 @@ void* Join::thread_work(void* args){
 						rcd2->Consume(rcdRight);
 						vecL.push_back(rcd1);
 						vecR.push_back(rcd2);
-						//cout <<"vector size now: " <<vecL.size()<<" R: "<<vecR.size()<<endl;
 						while(pipeL.Remove(rcdLeft)) {
 							if(0 == comp.Compare(rcdLeft, rcd1, &orderL)) {
 								Record *cLMe = new Record();
@@ -334,18 +333,13 @@ void* Join::thread_work(void* args){
 								}
 							}
 						}
-						for(auto it:vecL) { 
-							if(!it) 
-							{ 
+						for(auto it:vecL)
+							if(!it)
 								delete it; 
-							}
-						}
 						vecL.clear();
-						for(auto it : vecR) { 
-							if(!it) { 
-								delete it; 
-							} 
-						}
+						for(auto it : vecR)
+							if(!it)
+								delete it;
 						vecR.clear();
 						break;
 				}
@@ -364,10 +358,9 @@ void* Join::thread_work(void* args){
 		}
 	} 
 	else {
-			cout <<"block nested loops join"<<endl;
 			int n_pages = 10;
-			Record *rcdL = new Record;
-			Record *rcdR = new Record;
+			Record *rcdLeft = new Record;
+			Record *rcdRight = new Record;
 			Page pageR;
 			DBFile dbFileL;
 				fType ft = heap;
@@ -376,9 +369,9 @@ void* Join::thread_work(void* args){
 
 			int leftAttr, rightAttr, totalAttr, *attrToKeep;
 
-			if(arg->inPipe->Remove(rcdL) && arg->inPipe2->Remove(rcdR)) {
-				leftAttr = ((int *) rcdL->bits)[1] / sizeof(int) -1;
-				rightAttr = ((int *) rcdR->bits)[1] / sizeof(int) -1;
+			if(arg->inPipe->Remove(rcdLeft) && arg->inPipe2->Remove(rcdRight)) {
+				leftAttr = ((int *) rcdLeft->bits)[1] / sizeof(int) -1;
+				rightAttr = ((int *) rcdRight->bits)[1] / sizeof(int) -1;
 				totalAttr = leftAttr + rightAttr;
 				attrToKeep = new int[totalAttr];
 				for(int i = 0; i< leftAttr; i++)
@@ -386,8 +379,8 @@ void* Join::thread_work(void* args){
 				for(int i = 0; i< rightAttr; i++)
 					attrToKeep[i+leftAttr] = i;
 				do {
-					dbFileL.Add(*rcdL);
-				}while(arg->inPipe->Remove(rcdL));
+					dbFileL.Add(*rcdLeft);
+				}while(arg->inPipe->Remove(rcdLeft));
 				vector<Record *> vecR;
 				ComparisonEngine comp;
 
@@ -395,16 +388,16 @@ void* Join::thread_work(void* args){
 				int joinNum =0;
 				while(rMore) {
 					Record *first = new Record();
-					first->Copy(rcdR);
-					pageR.Append(rcdR);
+					first->Copy(rcdRight);
+					pageR.Append(rcdRight);
 					vecR.push_back(first);
 					int rPages = 0;
 
 					rMore = false;
-					while(arg->inPipe2->Remove(rcdR)) {
+					while(arg->inPipe2->Remove(rcdRight)) {
 						Record *copyMe = new Record();
-						copyMe->Copy(rcdR);
-						if(!pageR.Append(rcdR)) {
+						copyMe->Copy(rcdRight);
+						if(!pageR.Append(rcdRight)) {
 							rPages += 1;
 							if(rPages >= n_pages -1) {
 								rMore = true;
@@ -412,7 +405,7 @@ void* Join::thread_work(void* args){
 							}
 							else {
 								pageR.EmptyItOut();
-								pageR.Append(rcdR);
+								pageR.Append(rcdRight);
 								vecR.push_back(copyMe);
 							}
 						} else {
@@ -421,22 +414,21 @@ void* Join::thread_work(void* args){
 					}
 					dbFileL.MoveFirst();
 					int fileRN = 0;
-					while(dbFileL.GetNext(*rcdL)) {
+					while(dbFileL.GetNext(*rcdLeft)) {
 						for(auto it:vecR) {
-							if(1 == comp.Compare(rcdL, it, arg->literal, arg->cnf)) {
-								//applied to the CNF, then join
+							if(1 == comp.Compare(rcdLeft, it, arg->literal, arg->cnf)) {
 								joinNum++;
-								Record *jr = new Record();
-								Record *rr = new Record();
-								rr->Copy(it);
-								jr->MergeRecords(rcdL, rr, leftAttr, rightAttr, attrToKeep, leftAttr+rightAttr, leftAttr);
-								arg->outPipe->Insert(jr);
+								Record *joinRec = new Record();
+								Record *rightRec = new Record();
+								rightRec->Copy(it);
+								joinRec->MergeRecords(rcdLeft, rightRec, leftAttr, rightAttr, attrToKeep, leftAttr+rightAttr, leftAttr);
+								arg->outPipe->Insert(joinRec);
 							}
 						}
 					}
 					for(auto it : vecR)
-						if(!it) 
-							 delete it;
+						if(!it)
+							delete it;
 					vecR.clear();
 				}
 				dbFileL.Close();
