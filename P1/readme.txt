@@ -16,10 +16,17 @@ To compile the driver, type
 
 To run the driver, type
 	1.	./a22.out or ./a1-test.out and save all the database for this driver to use
-	2.	./test.out [1-8]
-		for e.g. 
-		./test.out 1
+	2.	To run the driver, type 'test.out' followed by the query # you wish to execute
+		./test.out [1-8]
 
+The Queries:
+==============
+1. select * from partsupp where ps_supplycost < 500
+2. select p_partkey, p_name, p_retailprice from part where p_retailprice < 100;
+3. select sum (s_acctbal + (s_acctbal * .05)) from supplier;
+4. select sum (ps_supplycost) from supplier, partsupp where s_suppkey = ps_suppkey;
+5. select distinct ps_suppkey from partsupp where ps_supplycost < 100.11;
+6. select sum (ps_supplycost) from supplier, partsupp where s_suppkey = ps_suppkey groupby s_nationkey;
 and follow the on-screen instructions.
 
 Using the driver:
