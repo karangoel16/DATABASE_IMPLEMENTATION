@@ -9,7 +9,7 @@ To run this module we need to create sorted dbfile or heapfile beforehand
 Note that the driver only works with the tpch files (generated using the dbgen program). 
 
 To compile the driver, type
-	make test.out
+	make a3.out
 	make a2-test.out 
 	make a1-test.out
 	make a22.out
@@ -17,7 +17,7 @@ To compile the driver, type
 To run the driver, type
 	1.	./a22.out or ./a1-test.out and save all the database for this driver to use
 	2.	To run the driver, type 'test.out' followed by the query # you wish to execute
-		./test.out [1-8]
+		./a3.out [1-8]
 
 The Queries:
 ==============

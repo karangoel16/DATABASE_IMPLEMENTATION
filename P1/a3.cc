@@ -360,7 +360,7 @@ possible plan:
 int main (int argc, char *argv[]) {
 
 	if (argc != 2) {
-		cerr << " Usage: ./test.out [1-8] \n";
+		cerr << " Usage: ./a3.out [1-8] \n";
 		exit (0);
 	}
 

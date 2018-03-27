@@ -6,8 +6,8 @@ ifdef linux
 tag = -n
 endif
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o Pipe.o BigQ.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o RelOp.o test.o -lfl -lpthread
+a3.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o a3.o
+	$(CC) -o a3.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o Pipe.o BigQ.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o RelOp.o a3.o -lfl -lpthread
 
 a1-test.out: Record.o BigQ.o SortedFile.o Comparison.o VirtualDBFile.o BigQ.o Pipe.o ComparisonEngine.o Function.o HeapFile.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o BigQ.o SortedFile.o a1-test.o
 	$(CC) -D F_DEBUG -o a1-test.out BigQ.o Pipe.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Function.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o a1-test.o -lfl -lpthread
@@ -33,8 +33,8 @@ a1-test.o: a1-test.cc
 a2-test.o: a2-test.cc
 	$(CC) -g -c a2-test.cc
 
-test.o: test.cc
-	$(CC) -g -c test.cc
+a3.o: a3.cc
+	$(CC) -g -c a3.cc
 
 main.o: main.cc
 	$(CC) -g -c main.cc
@@ -105,4 +105,4 @@ clean:
 	rm -f yyfunc.tab.*
 	rm -f lex.yyfunc*
 
-all: a2-test.out a1-test.out a22.out test.out
+all: a2-test.out a1-test.out a22.out a3.out
