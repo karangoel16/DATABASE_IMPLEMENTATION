@@ -372,7 +372,7 @@ int main (int argc, char *argv[]) {
 		setup ();
 		query = query_ptr [qindx - 1];
 		query ();
-		//cleanup ();
+		cleanup ();
 		cout << "\n\n";
 	}
 	else {

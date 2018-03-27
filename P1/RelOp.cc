@@ -1,23 +1,6 @@
 #include "RelOp.h"
 
 
-void sum(Pipe *inPipe,Pipe *outPipe, Function *func){
-	Record rec;
-	double result=0.0;
-	while(inPipe->Remove(&rec)){
-		int int_res=0;double dbl_res=0;
-		func->Apply(rec,int_res,dbl_res);
-		result += (int_res + dbl_res);
-	}
-	Attribute DA = {"double", Double};
-	Schema sum_sch ("sum_sch", 1, &DA);
-	stringstream ss;
-	ss<<result<<"|";
-	Record *rcd=new Record();
-	rcd->ComposeRecord(&sum_sch, ss.str().c_str());
-	outPipe->Insert(rcd);
-	outPipe->ShutDown();
-}
 struct Param{
 	DBFile *dbfile;
 	Pipe *outPipe;
@@ -88,7 +71,21 @@ void Sum::Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
 
 void *Sum::thread_work(void *args){
 	struct Param *arg = (struct Param *)(args);   
-	sum(arg->inPipe,arg->outPipe,arg->func);
+	Record rec;
+	double result=0.0;
+	while(arg->inPipe->Remove(&rec)){
+		int int_res=0;double dbl_res=0;
+		arg->func->Apply(rec,int_res,dbl_res);
+		result += (int_res + dbl_res);
+	}
+	Attribute DA = {"double", Double};
+	Schema sum_sch ("sum_sch", 1, &DA);
+	stringstream ss;
+	ss<<result<<"|";
+	Record *rcd=new Record();
+	rcd->ComposeRecord(&sum_sch, ss.str().c_str());
+	arg->outPipe->Insert(rcd);
+	arg->outPipe->ShutDown();
 }
 
 void DuplicateRemoval::Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
@@ -313,7 +310,7 @@ void* Join::thread_work(void* args){
 							}
 						}
 						while(pipeR.Remove(rcdRight)) {
-							if(0 == comp.Compare(rcdRight, rcd2, &orderR)) {
+							if(!comp.Compare(rcdRight, rcd2, &orderR)) {
 								Record *cRMe = new Record();
 								cRMe->Consume(rcdRight);
 								vecR.push_back(cRMe);
@@ -327,7 +324,7 @@ void* Join::thread_work(void* args){
 						for(auto itL :vecL) {
 							lr->Consume(itL);
 							for(auto itR: vecR) {
-								if( 1 == comp.Compare(lr, itR, arg->literal, arg->cnf)) {
+								if(comp.Compare(lr, itR, arg->literal, arg->cnf)) {
 									joinNum++;
 									rr->Copy(itR);
 									jr->MergeRecords(lr, rr, lAttr, rAttr, attrToKeep, lAttr+rAttr, lAttr);
@@ -418,7 +415,7 @@ void* Join::thread_work(void* args){
 					int fileRN = 0;
 					while(dbFileL.GetNext(*rcdLeft)) {
 						for(auto it:vecR) {
-							if(1 == comp.Compare(rcdLeft, it, arg->literal, arg->cnf)) {
+							if(comp.Compare(rcdLeft, it, arg->literal, arg->cnf)) {
 								joinNum++;
 								Record *joinRec = new Record();
 								Record *rightRec = new Record();
