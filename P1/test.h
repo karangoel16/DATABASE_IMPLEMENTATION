@@ -26,6 +26,7 @@ extern "C" {
 	void close_lexical_parser (); // defined in lex.yy.c
 	void init_lexical_parser_func (char *); // defined in lex.yyfunc.c (from Lexerfunc.l)
 	void close_lexical_parser_func (); // defined in lex.yyfunc.c
+	struct YY_BUFFER_STATE *yy_scan_string(const char*);
 }
 
 extern struct AndList *final;
