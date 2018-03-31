@@ -94,8 +94,12 @@ void q0 (){
 
 	s.AddRel(relName[1],800000);
 	s.AddAtt(relName[1], "ps_suppkey", 10000);	
-
-	char *cnf = "(s_suppkey = ps_suppkey)";
+	std::cout<<s<<endl;
+	s.Write(fileName);
+	Statistics s1;
+	s1.Read(fileName);	
+	std::cout<<s1<<endl;
+	/*char *cnf = "(s_suppkey = ps_suppkey)";
 
 	yy_scan_string(cnf);
 	yyparse();
@@ -118,7 +122,7 @@ void q0 (){
 	{
 		cout<<"Read or write or last apply is not correct\n";
 	}	
-	
+	*/
 }
 
 void q1 (){
