@@ -6,6 +6,9 @@
 #include <unordered_map>
 #include <fstream>
 #include <iostream>
+#include <unordered_set>
+#include <sstream>
+#include <unordered_map>
 using namespace std;
 struct Rel{
 	int numAttr;
@@ -30,6 +33,58 @@ struct Rel{
 class Statistics
 {
 	unordered_map<string,Rel> relation;
+	unordered_map<string,double> estimate;
+	/*
+		we will split the string for finding purose
+		1. We have kept unordered_map for that we don't insert same values in the unordered_map again
+	*/
+	std::unordered_set<string> split(string s){
+		stringstream ss(s);
+		string line;
+		unordered_set<string> res;
+		while(getline(ss,line,'#')){
+			res.insert(line);
+		}
+		return res;
+	}
+	bool checkRel(char *relName[],int numJoin){
+		unordered_set<string> st;
+		for(auto i=0;i<numJoin;i++)
+			st.insert(string(relName[i]));
+		for(auto i=0;i<numJoin;i++){
+			string rel(relName[i]);
+			for(auto it:estimate){
+				auto check=split(it.first);
+				if(check.count(rel)){
+					for(auto i:check){
+						if(!st.count(i)){
+							return false;
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	bool checkAttributes(struct Operand *left, double &t, char **relNames, int numToJoin){
+	string operand(left->value);
+	if(left->code == 4){
+			bool found = false;
+			for(int i=0; i<numToJoin; i++){
+				string relname(relNames[i]);				
+				if(relation[relname].attr.count(operand)){
+						found = true;
+						t = relation[relname].attr[operand]!=-1?relation[relname].attr[operand]:t;
+						return true;
+				}
+			}
+			if(!found){
+						cout<<"found attribute name "<<operand<<" not in relations!"<<endl;
+						return false;
+			}
+	}
+	return true;
+}
 public:
 	Statistics();
 	Statistics(Statistics &copyMe);	 // Performs deep copy

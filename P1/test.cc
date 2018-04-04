@@ -3,6 +3,7 @@
 #include "Statistics.h"
 #include "ParseTree.h"
 #include <math.h>
+#include <iomanip>
 #include "test.h"
 //extern "C" struct YY_BUFFER_STATE *yy_scan_string(const char*);
 //extern "C" int yyparse(void);
@@ -94,26 +95,23 @@ void q0 (){
 
 	s.AddRel(relName[1],800000);
 	s.AddAtt(relName[1], "ps_suppkey", 10000);	
-	std::cout<<s<<endl;
-	s.Write(fileName);
-	Statistics s1;
-	s1.Read(fileName);	
-	std::cout<<s1<<endl;
-	/*char *cnf = "(s_suppkey = ps_suppkey)";
-
+	char *cnf = "(s_suppkey = ps_suppkey)";
+	std::cout<<s<<"\n";
 	yy_scan_string(cnf);
 	yyparse();
 	double result = s.Estimate(final, relName, 2);
+	std::cout<<result<<"\n";
 	if(result!=800000)
 		cout<<"error in estimating Q1 before apply \n ";
 	s.Apply(final, relName, 2);
 
 	// test write and read
 	s.Write(fileName);
-
+	std::cout<<s<<"\n";
 	//reload the statistics object from file
 	Statistics s1;
-	s1.Read(fileName);	
+	s1.Read(fileName);
+	//s1.Apply(final,relName,2);
 	cnf = "(s_suppkey>1000)";	
 	yy_scan_string(cnf);
 	yyparse();
@@ -122,7 +120,6 @@ void q0 (){
 	{
 		cout<<"Read or write or last apply is not correct\n";
 	}	
-	*/
 }
 
 void q1 (){
@@ -142,12 +139,10 @@ void q1 (){
 	yyparse();
 
 	double result = s.Estimate(final, relName, 1);
-	cout<<"Your estimation Result  " <<result;
-	cout<<"\n Correct Answer: 8.5732e+5";
-
+	cout<<"Your estimation Result  " <<result<<endl;
+	cout<<"\n Correct Answer: 8.5732e+5"<<endl;
 	s.Apply(final, relName, 1);
-
-	// test write and read
+	std::cout<<s.Estimate(final,relName,1)<<endl;
 	s.Write(fileName);
 	
 	
@@ -177,7 +172,7 @@ void q2 (){
 
 	// Join the first two relations in relName
 	s.Apply(final, relName, 2);
-	
+	std::cout<<s<<"\n";
 	cnf = " (c_nationkey = n_nationkey)";
 	yy_scan_string(cnf);
 	yyparse();
@@ -202,7 +197,7 @@ void q3 (){
 	s.Read(fileName);
 	
 	s.AddRel(relName[0],10000);
-	s.AddAtt(relName[0], "s_nationey",25);
+	s.AddAtt(relName[0], "s_nationkey",25);
 
 	s.AddRel(relName[1],150000);
 	s.AddAtt(relName[1], "c_custkey",150000);
@@ -216,6 +211,7 @@ void q3 (){
 	s.CopyRel("supplier","s");
 	s.CopyRel("customer","c");
 
+	std::cout<<s<<endl;
 	char *set1[] ={"s","n1"};
 	char *cnf = "(s.s_nationkey = n1.n_nationkey)";
 	yy_scan_string(cnf);
@@ -274,31 +270,33 @@ void q4 (){
 	s.CopyRel("supplier","s");
 	s.CopyRel("nation","n");
 	s.CopyRel("region","r");
+	std::cout<<s;
 
 	char *cnf = "(p.p_partkey=ps.ps_partkey) AND (p.p_size = 2)";
 	yy_scan_string(cnf);
 	yyparse();
-	s.Apply(final, relName, 2);
+	char *set1[] = { "p", "ps","s","n","r"};
+	s.Apply(final, set1, 2);
 
 	cnf ="(s.s_suppkey = ps.ps_suppkey)";
 	yy_scan_string(cnf);
 	yyparse();
-	s.Apply(final, relName, 3);
+	s.Apply(final, set1, 3);
 
 	cnf =" (s.s_nationkey = n.n_nationkey)";
 	yy_scan_string(cnf);
 	yyparse();
-	s.Apply(final, relName, 4);
+	s.Apply(final, set1, 4);
 
 	cnf ="(n.n_regionkey = r.r_regionkey) AND (r.r_name = 'AMERICA') ";
 	yy_scan_string(cnf);
 	yyparse();
 
-	double result = s.Estimate(final, relName, 5);
+	double result = s.Estimate(final, set1, 5);
 	if(fabs(result-3200)>0.1)
 		cout<<"error in estimating Q4\n";
 
-	s.Apply(final, relName, 5);	
+	s.Apply(final, set1, 5);	
 	
 	s.Write(fileName);
 	
@@ -319,7 +317,7 @@ void q5 (){
 	s.AddRel(relName[1],1500000);
 	s.AddAtt(relName[1], "o_orderkey",1500000);
 	s.AddAtt(relName[1], "o_custkey",150000);
-	
+	s.AddAtt(relName[1],"o_orderdate",-1);
 	s.AddRel(relName[2],6001215);
 	s.AddAtt(relName[2], "l_orderkey",1500000);
 	
@@ -401,14 +399,13 @@ void q7(){
 	
 	s.AddRel(relName[1],6001215);
 	s.AddAtt(relName[1], "l_orderkey",1500000);
-	
-
+	s.AddAtt(relName[1],"l_receiptdate",-1);
 	char *cnf = "(l_receiptdate >'1995-02-01' ) AND (l_orderkey = o_orderkey)";
-
+	std::cout<<s<<"\n";
 	yy_scan_string(cnf);
 	yyparse();
 	double result = s.Estimate(final, relName, 2);
-
+	std::cout<<result<<"\n";
 	if(fabs(result-2000405)>0.1)
 		cout<<"error in estimating Q7\n";
 
@@ -502,7 +499,7 @@ void q10 (){
 	s.AddRel(relName[1],1500000);
 	s.AddAtt(relName[1], "o_orderkey",1500000);
 	s.AddAtt(relName[1], "o_custkey",150000);
-	
+	s.AddAtt(relName[1],"o_orderdate",-1);
 	s.AddRel(relName[2],6001215);
 	s.AddAtt(relName[2], "l_orderkey",1500000);
 	
@@ -542,7 +539,7 @@ void q11 (){
 	
 	s.AddRel(relName[0],200000);
 	s.AddAtt(relName[0], "p_partkey",200000);
-	s.AddAtt(relName[0], "p_conatiner",40);
+	s.AddAtt(relName[0], "p_container",40);
 
 	s.AddRel(relName[1],6001215);
 	s.AddAtt(relName[1], "l_partkey",200000);
@@ -555,7 +552,7 @@ void q11 (){
 	yyparse();
 	
 	double result = s.Estimate(final, relName,2);
-
+	std::cout<<result<<"\n";
 	if(fabs(result-21432.9)>0.5)
 		cout<<"error in estimating Q11\n";
 	s.Apply(final, relName,2);

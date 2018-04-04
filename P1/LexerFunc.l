@@ -60,7 +60,7 @@ void close_lexical_parser_func () { yyfunc_delete_buffer (yyfunc_buf_state); }
   			return(Float);
 			}
 
-[A-Za-z][A-Za-z0-9_-]* {yyfunclval.actualChars = strdup(yyfunctext);
+[A-Za-z][\.A-Za-z0-9_-]* {yyfunclval.actualChars = strdup(yyfunctext);
   			return(Name);
 			}     
 
@@ -79,5 +79,4 @@ void yyfuncerror(char *s) {
 int yyfuncwrap(void){
   return 1;
 }
-
 
