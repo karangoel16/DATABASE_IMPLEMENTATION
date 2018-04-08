@@ -63,6 +63,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 				if(!checkAttributes(pComp->left, t1, relNames, numToJoin) || !checkAttributes(pComp->right, t2, relNames, numToJoin))
 					return ;
 				string operand1(pComp->left->value);
+
 				if (pComp->code == 1 || pComp->code == 2){
 						Or_fact += 1.0/3;
 						Or_fact_de *= 1.0/3;
@@ -109,7 +110,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
         pAnd = pAnd->rightAnd;
     }
   
-    long long maxTuples = 1;
+    long double maxTuples = 1;
     bool reltable[numToJoin];
     for(int i=0; i<numToJoin; i++){
 		reltable[i] = true;
@@ -134,7 +135,6 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 	 }
 	 
 	double res = factorial * maxTuples;
-	cout<<"Apply result "<<res<<endl;
 
     string newSet;
     for(int i=0; i<numToJoin; i++){
@@ -202,7 +202,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
         pAnd = pAnd->rightAnd;
     }
   
-    long long maxTuples = 1;
+    long double maxTuples = 1;
     vector<bool> reltable(numToJoin,true);
     for(int i=0; i<numToJoin; i++){
 		if(!reltable[i])
@@ -223,7 +223,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
             }
         }
 	 }
-	cout<<"Estimate Result: "<<factorial * maxTuples<<endl;
+	//cout<<"Estimate Result: "<<factorial * maxTuples<<endl;
     return factorial * maxTuples;
 }
 
@@ -250,7 +250,7 @@ std::ostream& operator<<(std::ostream& os, const Statistics& stat){
     os<<stat.relation.size()<<" ";
     for(auto it:stat.relation)
         os<<it.first<<" "<<it.second;
-    //os<<save_two_values<unordered_map<string,double>>(stat.estimate);
+    os<<save_two_values<unordered_map<string,double>>(stat.estimate);
     return os;
 }
 
@@ -264,12 +264,12 @@ std::istream& operator>>(std::istream& is, Statistics& stat){
         stat.relation[temp]=tempRel;
         //stat.estimate[temp]=tempRel.numAttr;
     }
-    /*is>>size;
+    is>>size;
     for(int i=0;i<size;i++){
         string temp;
         double dbl;
         is>>temp>>dbl;
         stat.estimate[temp]=dbl;
-    }*/
+    }
     return is;
 }

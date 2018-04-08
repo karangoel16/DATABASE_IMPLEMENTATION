@@ -96,18 +96,15 @@ void q0 (){
 	s.AddRel(relName[1],800000);
 	s.AddAtt(relName[1], "ps_suppkey", 10000);	
 	char *cnf = "(s_suppkey = ps_suppkey)";
-	std::cout<<s<<"\n";
 	yy_scan_string(cnf);
 	yyparse();
 	double result = s.Estimate(final, relName, 2);
-	std::cout<<result<<"\n";
 	if(result!=800000)
 		cout<<"error in estimating Q1 before apply \n ";
 	s.Apply(final, relName, 2);
 
 	// test write and read
 	s.Write(fileName);
-	std::cout<<s<<"\n";
 	//reload the statistics object from file
 	Statistics s1;
 	s1.Read(fileName);
@@ -142,7 +139,6 @@ void q1 (){
 	cout<<"Your estimation Result  " <<result<<endl;
 	cout<<"\n Correct Answer: 8.5732e+5"<<endl;
 	s.Apply(final, relName, 1);
-	std::cout<<s.Estimate(final,relName,1)<<endl;
 	s.Write(fileName);
 	
 	
@@ -172,7 +168,6 @@ void q2 (){
 
 	// Join the first two relations in relName
 	s.Apply(final, relName, 2);
-	std::cout<<s<<"\n";
 	cnf = " (c_nationkey = n_nationkey)";
 	yy_scan_string(cnf);
 	yyparse();
@@ -194,7 +189,7 @@ void q3 (){
 	Statistics s;
 	char *relName[] = {"supplier","customer","nation"};
 
-	s.Read(fileName);
+	//s.Read(fileName);
 	
 	s.AddRel(relName[0],10000);
 	s.AddAtt(relName[0], "s_nationkey",25);
@@ -211,7 +206,6 @@ void q3 (){
 	s.CopyRel("supplier","s");
 	s.CopyRel("customer","c");
 
-	std::cout<<s<<endl;
 	char *set1[] ={"s","n1"};
 	char *cnf = "(s.s_nationkey = n1.n_nationkey)";
 	yy_scan_string(cnf);
@@ -270,7 +264,6 @@ void q4 (){
 	s.CopyRel("supplier","s");
 	s.CopyRel("nation","n");
 	s.CopyRel("region","r");
-	std::cout<<s;
 
 	char *cnf = "(p.p_partkey=ps.ps_partkey) AND (p.p_size = 2)";
 	yy_scan_string(cnf);
@@ -350,7 +343,7 @@ void q6 (){
 	Statistics s;
         char *relName[] = { "partsupp", "supplier", "nation"};
 
-	s.Read(fileName);
+	//s.Read(fileName);
 	
 	s.AddRel(relName[0],800000);
 	s.AddAtt(relName[0], "ps_suppkey",10000);
@@ -390,7 +383,7 @@ void q7(){
 	Statistics s;
         char *relName[] = { "orders", "lineitem"};
 
-	s.Read(fileName);
+	//s.Read(fileName);
 	
 
 	s.AddRel(relName[0],1500000);
@@ -401,11 +394,9 @@ void q7(){
 	s.AddAtt(relName[1], "l_orderkey",1500000);
 	s.AddAtt(relName[1],"l_receiptdate",-1);
 	char *cnf = "(l_receiptdate >'1995-02-01' ) AND (l_orderkey = o_orderkey)";
-	std::cout<<s<<"\n";
 	yy_scan_string(cnf);
 	yyparse();
 	double result = s.Estimate(final, relName, 2);
-	std::cout<<result<<"\n";
 	if(fabs(result-2000405)>0.1)
 		cout<<"error in estimating Q7\n";
 
@@ -421,7 +412,7 @@ void q8 (){
 	Statistics s;
         char *relName[] = { "part",  "partsupp"};
 
-	s.Read(fileName);
+	//s.Read(fileName);
 	
 	s.AddRel(relName[0],200000);
 	s.AddAtt(relName[0], "p_partkey",200000);
@@ -490,7 +481,7 @@ void q10 (){
 	Statistics s;
         char *relName[] = { "customer", "orders", "lineitem","nation"};
 
-	s.Read(fileName);
+	//s.Read(fileName);
 	
 	s.AddRel(relName[0],150000);
 	s.AddAtt(relName[0], "c_custkey",150000);
@@ -535,7 +526,7 @@ void q11 (){
 	Statistics s;
         char *relName[] = { "part",  "lineitem"};
 
-	s.Read(fileName);
+	//s.Read(fileName);
 	
 	s.AddRel(relName[0],200000);
 	s.AddAtt(relName[0], "p_partkey",200000);
@@ -552,7 +543,6 @@ void q11 (){
 	yyparse();
 	
 	double result = s.Estimate(final, relName,2);
-	std::cout<<result<<"\n";
 	if(fabs(result-21432.9)>0.5)
 		cout<<"error in estimating Q11\n";
 	s.Apply(final, relName,2);

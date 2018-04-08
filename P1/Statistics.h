@@ -12,7 +12,7 @@
 using namespace std;
 struct Rel{
 	int numAttr;
-	unordered_map<string,int> attr;
+	unordered_map<string,double> attr;
 	Rel(){};//default constructor
 	Rel(int numAttr):numAttr(numAttr){}//this is default attribute
 	void AddRel(char *attrName,int numDistincts)
