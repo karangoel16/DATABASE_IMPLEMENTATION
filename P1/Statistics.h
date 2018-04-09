@@ -53,8 +53,8 @@ class Statistics
 			st.insert(string(relName[i]));
 		for(auto i=0;i<numJoin;i++){
 			string rel(relName[i]);
-			for(auto it:estimate){
-				auto check=split(it.first);
+			for(auto iter:estimate){
+				auto check=split(iter.first);
 				if(check.count(rel)){
 					for(auto i:check){
 						if(!st.count(i)){
@@ -66,7 +66,7 @@ class Statistics
 		}
 		return true;
 	}
-	bool checkAttributes(struct Operand *left, double &t, char **relNames, int numToJoin){
+	bool checkAtt(struct Operand *left, double &t, char **relNames, int numToJoin){
 	string operand(left->value);
 	if(left->code == 4){
 			bool found = false;
@@ -79,7 +79,7 @@ class Statistics
 				}
 			}
 			if(!found){
-						cout<<"found attribute name "<<operand<<" not in relations!"<<endl;
+						cout<<operand<<" not found!!"<<endl;
 						return false;
 			}
 	}

@@ -23,8 +23,8 @@ void Statistics::CopyRel(char *oldName, char *newName)
 {
     string newRelation=string(newName),oldRelation=string(oldName);
     relation[string(newName)].numAttr=relation[oldRelation].numAttr;
-    for(auto it:relation[oldRelation].attr)
-        relation[newRelation].attr[newRelation+"."+it.first]=it.second;
+    for(auto iter:relation[oldRelation].attr)
+        relation[newRelation].attr[newRelation+"."+iter.first]=iter.second;
     estimate[newRelation]=relation[newRelation].numAttr;
 }
 	
@@ -45,86 +45,89 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 {
     if(!checkRel( relNames, numToJoin))
 		return ;	
-	struct AndList *pAnd = parseTree;
-    double factorial = 1.0;
-    double Or_fact = 0;
-    double Or_fact_de = 0;
-    double Or_fact_partial = 0;
-    while(pAnd!= NULL){
-		struct OrList *pOr = pAnd->left;
-		Or_fact = 0;
-		Or_fact_de = 1;
-		unordered_map<string, int> change;
+	struct AndList *pA = parseTree;
+    double fact = 1.0,orFact = 0,orFactDe = 0,orFactPartial = 0;
+    while(pA!= NULL){
+		struct OrList *pOr = pA->left;
+		orFact = 0;
+		orFactDe = 1;
+		unordered_map<string, int> diff;
 		string previous;
 		while(pOr!=NULL){
 				struct ComparisonOp *pComp = pOr->left;
-				double t1 = 1.0;
-				double t2 = 1.0;
-				if(!checkAttributes(pComp->left, t1, relNames, numToJoin) || !checkAttributes(pComp->right, t2, relNames, numToJoin))
+				double tLeft = 1.0,tRight = 1.0;
+				if(!checkAtt(pComp->left, tLeft, relNames, numToJoin) || !checkAtt(pComp->right, tRight, relNames, numToJoin)){
 					return ;
-				string operand1(pComp->left->value);
+				}			
+				string oper1(pComp->left->value);
 
 				if (pComp->code == 1 || pComp->code == 2){
-						Or_fact += 1.0/3;
-						Or_fact_de *= 1.0/3;
-                        for(auto & it:relation)
-							if(it.second.attr.count(operand1)!=0)
-								it.second.attr[operand1] /= 3;
+						orFact += 1.0/3;
+						orFactDe *= 1.0/3;
+                        for(auto & iter:relation)
+							if(iter.second.attr.count(oper1)!=0)
+								iter.second.attr[oper1] /= 3;
 						
 						pOr = pOr->rightOr;
 						continue;
                 }
-				if(t2==1.0|| t1>t2 || t1<t2){
-					if(change.count(operand1))
-						change[operand1]++;
-					else
-						change[operand1] = min(t1,t2);
+				if(tRight==1.0|| tLeft>tRight || tLeft<tRight){
+					if(diff.count(oper1)){
+						diff[oper1]++;
+					}
+					else{
+						diff[oper1] = min(tLeft,tRight);
+					}
+						
                 }
-				if(operand1.compare(previous)!=0 && Or_fact_partial != 0){
-						Or_fact += Or_fact_partial;
-						Or_fact_de *= Or_fact_partial;
-						Or_fact_partial = 0;
+				if(oper1.compare(previous)!=0 && orFactPartial != 0){
+						orFact += orFactPartial;
+						orFactDe *= orFactPartial;
+						orFactPartial = 0;
 						
 					}
-					Or_fact_partial += 1.0/max(t1, t2);
-					previous = operand1;
+					orFactPartial += 1.0/max(tLeft, tRight);
+					previous = oper1;
 
 				pOr = pOr->rightOr;
         }
         
-       if(Or_fact_partial){
-				Or_fact += Or_fact_partial;
-				Or_fact_de *= Or_fact_partial;
-				Or_fact_partial = 0;				
+       if(orFactPartial){
+				orFact += orFactPartial;
+				orFactDe *= orFactPartial;
+				orFactPartial = 0;				
 		}
         
-		if(Or_fact!=Or_fact_de)
-			factorial *= (Or_fact - Or_fact_de);
-		else
-			factorial *=  Or_fact;
-        for(auto &ch:change)
+		if(orFact!=orFactDe){
+			fact *= (orFact - orFactDe);
+		}
+		else{
+			fact *=  orFact;
+		}
+        for(auto &ch:diff)
             for(auto &rel:relation)
 				if(rel.second.attr.count(ch.first)){
 					rel.second.attr[ch.first] = ch.second;
 				}
-        pAnd = pAnd->rightAnd;
+        pA = pA->rightAnd;
     }
   
-    long double maxTuples = 1;
+    long double maxTup = 1;
     bool reltable[numToJoin];
     for(int i=0; i<numToJoin; i++){
 		reltable[i] = true;
 	}
 	
     for(int i=0; i<numToJoin; i++){
-		if(!reltable[i])
+		if(!reltable[i]){
 			continue;
+		}
 		string relname(relNames[i]);
-		for(auto it = estimate.begin(); it!=estimate.end(); it++){
-            auto check=split(it->first);
+		for(auto iter = estimate.begin(); iter!=estimate.end(); iter++){
+            auto check=split(iter->first);
 			if(check.count(relNames[i])!=0){				
 				reltable[i] = false;
-				maxTuples *= it->second;
+				maxTup *= iter->second;
 				for(int j=i+1; j<numToJoin; j++){
 					if(check.count(relNames[j])!=0)
 						reltable[j] = false;
@@ -134,97 +137,99 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
         }
 	 }
 	 
-	double res = factorial * maxTuples;
+	double result = fact * maxTup;
 
     string newSet;
     for(int i=0; i<numToJoin; i++){
 		string relname(relNames[i]);
 		newSet+=relname+"#";
-		for(auto it =estimate.begin(); it!=estimate.end(); it++){
-            auto check=split(it->first);
+		for(auto iter =estimate.begin(); iter!=estimate.end(); iter++){
+            auto check=split(iter->first);
 			if(check.count(relname)!=0){
-				estimate.erase(it);
+				estimate.erase(iter);
 				break;
 			}
 		}
     }
-    estimate.insert({newSet,res});
+    estimate.insert({newSet,result});
 }
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
     if(!checkRel(relNames,numToJoin)){
         return 0;
     }
-    struct AndList *pAnd = parseTree;
-    double factorial = 1.0;
-    double Or_fact = 0;
-    double Or_fact_de = 0;
-    double Or_fact_partial = 0;
-    while(pAnd!= NULL){
-		struct OrList *pOr = pAnd->left;
-		Or_fact = 0;
-		Or_fact_de = 1;
+    struct AndList *pA = parseTree;
+    double fact = 1.0;
+    double orFact = 0;
+    double orFactDe = 0;
+    double orFactPartial = 0;
+    while(pA!= NULL){
+		struct OrList *pOr = pA->left;
+		orFact = 0;
+		orFactDe = 1;
 		string previous;
 		while(pOr!=NULL){
 				struct ComparisonOp *pComp = pOr->left;
-				double t1 = 1.0;
-				double t2 = 1.0;
-				if(!checkAttributes(pComp->left, t1, relNames, numToJoin) || !checkAttributes(pComp->right, t2, relNames, numToJoin))
+				double tLeft = 1.0,tRight = 1.0;
+				if(!checkAtt(pComp->left, tLeft, relNames, numToJoin) || !checkAtt(pComp->right, tRight, relNames, numToJoin))
 					return 0;
 				if (pComp->code == 1 || pComp->code == 2){
-					Or_fact += 1.0/3;
-					Or_fact_de *= 1.0/3;
+					orFact += 1.0/3;
+					orFactDe *= 1.0/3;
 					pOr = pOr->rightOr;
 						continue;
 				}
 
-				string operand1(pComp->left->value);
-				if(operand1.compare(previous)!=0 && Or_fact_partial != 0){
-						Or_fact += Or_fact_partial;
-						Or_fact_de *= Or_fact_partial;
-						Or_fact_partial = 0;						
+				string oper1(pComp->left->value);
+				if(oper1.compare(previous)!=0 && orFactPartial != 0){
+						orFact += orFactPartial;
+						orFactDe *= orFactPartial;
+						orFactPartial = 0;						
 				}
-				Or_fact_partial += 1.0/max(t1, t2);
-				previous = operand1;
+				orFactPartial += 1.0/max(tLeft, tRight);
+				previous = oper1;
 				pOr = pOr->rightOr;
         }
-        if(Or_fact_partial != 0){
-				Or_fact += Or_fact_partial;
-				Or_fact_de *= Or_fact_partial;
-				Or_fact_partial = 0;				
-				
+        if(orFactPartial != 0){
+				orFact += orFactPartial;
+				orFactDe *= orFactPartial;
+				orFactPartial = 0;				
 		}
-		if(Or_fact!=Or_fact_de)
-			factorial *= (Or_fact - Or_fact_de);
-		else
-			factorial *=  Or_fact;
-
-        pAnd = pAnd->rightAnd;
+		if(orFact!=orFactDe){
+			fact *= (orFact - orFactDe);
+		}
+		else{
+			fact *=  orFact;
+		}
+        pA = pA->rightAnd;
     }
   
-    long double maxTuples = 1;
+    long double maxTup = 1;
     vector<bool> reltable(numToJoin,true);
     for(int i=0; i<numToJoin; i++){
-		if(!reltable[i])
+		if(!reltable[i]){
 			continue;
+		}
+			
 		string relname(relNames[i]);
 		
-		for(auto it = estimate.begin(); it!=estimate.end(); it++){
-            auto check=split(it->first);
+		for(auto iter = estimate.begin(); iter!=estimate.end(); iter++){
+            auto check=split(iter->first);
 			if(check.count(relNames[i])){				
 				reltable[i] = false;
-				maxTuples *= it->second;
+				maxTup *= iter->second;
 				
 				for(int j=0; j<numToJoin; j++){
-					if(check.count(relNames[j]))
+					if(check.count(relNames[j])){
 						reltable[j] = false;
+					}
+						
 				}
                 break;
             }
         }
 	 }
-	//cout<<"Estimate Result: "<<factorial * maxTuples<<endl;
-    return factorial * maxTuples;
+    return fact * maxTup;
 }
 
 std::ostream& operator<<(std::ostream& os, const Rel& relation){
@@ -248,8 +253,8 @@ std::istream& operator>>(std::istream& is, Rel& Rel){
 
 std::ostream& operator<<(std::ostream& os, const Statistics& stat){
     os<<stat.relation.size()<<" ";
-    for(auto it:stat.relation)
-        os<<it.first<<" "<<it.second;
+    for(auto iter:stat.relation)
+        os<<iter.first<<" "<<iter.second;
     os<<save_two_values<unordered_map<string,double>>(stat.estimate);
     return os;
 }
