@@ -17,6 +17,7 @@ struct Attribute {
 
 	char *name;
 	Type myType;
+	
 };
 
 class OrderMaker;
@@ -58,6 +59,8 @@ public:
 	int GetSortOrder (OrderMaker &order);
 
 	~Schema ();
+
+	friend std::ostream& operator<<(std::ostream& os, const Schema& schema);
 
 };
 

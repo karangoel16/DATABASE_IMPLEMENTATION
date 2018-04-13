@@ -21,8 +21,8 @@ a2-test.out: Record.o BigQ.o Statistics.o SortedFile.o Comparison.o VirtualDBFil
 a22.out: Record.o BigQ.o SortedFile.o Statistics.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o Function.o HeapFile.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o a22.o
 	$(CC) -D F_DEBUG -o a22.out BigQ.o Pipe.o Statistics.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Function.o  Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o a22.o -lfl -lpthread
 
-main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o
-	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o -lfl
+main: Query.o RelOp.o Record.o BigQ.o SortedFile.o Statistics.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o Function.o HeapFile.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o main.o
+	$(CC) -o main RelOp.o Query.o Record.o BigQ.o SortedFile.o Statistics.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o Function.o HeapFile.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o -lfl -pthread
 
 MetaStruct.o: MetaStruct.cc
 	$(CC) -g -c MetaStruct.cc
@@ -86,6 +86,9 @@ RelOp.o: RelOp.cc
 
 Function.o: Function.cc
 	$(CC) -g -c Function.cc
+
+Query.o: Query.cc
+	$(CC) -g -c Query.cc
 	
 y.tab.o: Parser.y
 	yacc -d Parser.y
@@ -114,4 +117,4 @@ clean:
 	rm -f yyfunc.tab.*
 	rm -f lex.yyfunc*
 
-all: a2-test.out a1-test.out a22.out a3.out a4-1.out
+all: a2-test.out a1-test.out a22.out a3.out a4-1.out main

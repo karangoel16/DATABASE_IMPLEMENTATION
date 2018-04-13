@@ -160,3 +160,20 @@ Schema :: ~Schema () {
 	myAtts = 0;
 }
 
+std::ostream& operator<<(std::ostream& os, const Schema& schema){
+	for(int i=0; i<schema.numAtts; i++) {
+		os <<"\t"<<schema.myAtts[i].name <<": ";
+		switch (schema.myAtts[i].myType) {
+		case Int:
+			os <<"int"<<endl;
+			break;
+		case Double:
+			os <<"double"<<endl;
+			break;
+		case String:
+			os <<"string"<<endl;
+			break;
+		}
+	}
+	return os;
+}
