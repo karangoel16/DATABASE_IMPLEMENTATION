@@ -21,8 +21,8 @@ a2-test.out: Record.o BigQ.o Statistics.o SortedFile.o Comparison.o VirtualDBFil
 a22.out: Record.o BigQ.o SortedFile.o Statistics.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o Function.o HeapFile.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o a22.o
 	$(CC) -D F_DEBUG -o a22.out BigQ.o Pipe.o Statistics.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Function.o  Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o a22.o -lfl -lpthread
 
-main: Query.o RelOp.o Record.o BigQ.o SortedFile.o Statistics.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o Function.o HeapFile.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o main.o
-	$(CC) -o main RelOp.o Query.o Record.o BigQ.o SortedFile.o Statistics.o Comparison.o VirtualDBFile.o Pipe.o ComparisonEngine.o Function.o HeapFile.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o -lfl -pthread
+main.out: TreeNode.o Record.o Query.o Comparison.o Statistics.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o main.o
+	$(CC) -o main.out TreeNode.o Query.o Record.o Statistics.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o Pipe.o BigQ.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o RelOp.o main.o -lfl -lpthread
 
 MetaStruct.o: MetaStruct.cc
 	$(CC) -g -c MetaStruct.cc
@@ -89,23 +89,26 @@ Function.o: Function.cc
 
 Query.o: Query.cc
 	$(CC) -g -c Query.cc
-	
+
+TreeNode.o: TreeNode.cc
+	$(CC) -g -c TreeNode.cc
+		
 y.tab.o: Parser.y
 	yacc -d Parser.y
-	#sed $(tag) y.tab.c -e "s/  __attribute__ ((__unused__))$$/# ifndef __cplusplus\n  __attribute__ ((__unused__));\n# endif/" 
+	sed $(tag) -e "s/  __attribute__ ((__unused__))$$/# ifndef __cplusplus\n  __attribute__ ((__unused__));\n# endif/" y.tab.c
 	g++ -c y.tab.c
-		
+
+lex.yy.o: Lexer.l
+	lex  Lexer.l
+	gcc  -c lex.yy.c
+
 yyfunc.tab.o: ParserFunc.y
 	yacc -p "yyfunc" -b "yyfunc" -d ParserFunc.y
 	#sed $(tag) yyfunc.tab.c -e "s/  __attribute__ ((__unused__))$$/# ifndef __cplusplus\n  __attribute__ ((__unused__));\n# endif/" 
 	g++ -c yyfunc.tab.c
-	
-lex.yy.o: Lexer.l
-	lex Lexer.l
-	gcc  -c lex.yy.c
 
 lex.yyfunc.o: LexerFunc.l
-	lex -Pyyfunc LexerFunc.l
+	lex -P yyfunc LexerFunc.l
 	gcc  -c lex.yyfunc.c
 
 clean: 
@@ -117,4 +120,4 @@ clean:
 	rm -f yyfunc.tab.*
 	rm -f lex.yyfunc*
 
-all: a2-test.out a1-test.out a22.out a3.out a4-1.out main
+all: a2-test.out a1-test.out a22.out a3.out a4-1.out main.out
