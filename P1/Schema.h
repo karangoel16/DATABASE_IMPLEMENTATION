@@ -38,6 +38,7 @@ public:
 	// to aliasing!!!
 	Attribute *GetAtts ();
 
+	void Print();
 	// returns the number of attributes
 	int GetNumAtts ();
 

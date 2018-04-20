@@ -26,6 +26,7 @@ int main () {
 	Statistics * s=new Statistics();
 	yyparse();
 	Query *q=new Query(finalFunction,tables,boolean,groupingAtts,attsToSelect,distinctAtts,distinctFunc,s,std::string(dbfile_dir),string(tpch_dir),string(catalog_path));
+	//q->PrintQuery();
 	cleanup();
 }	
 

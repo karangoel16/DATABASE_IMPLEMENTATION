@@ -60,6 +60,22 @@ Schema :: Schema (char *fpath, int num_atts, Attribute *atts) {
 	}
 }
 
+void Schema::Print() {
+	for(int i=0; i<numAtts; i++) {
+		cout <<"\t"<<myAtts[i].name <<": ";
+		switch (myAtts[i].myType) {
+		case Int:
+			cout <<"int"<<endl;
+			break;
+		case Double:
+			cout <<"double"<<endl;
+			break;
+		case String:
+			cout <<"string"<<endl;
+			break;
+		}
+	}
+}
 
 Schema :: Schema(Schema *left, Schema *right):numAtts(left->numAtts+right->numAtts)
 {

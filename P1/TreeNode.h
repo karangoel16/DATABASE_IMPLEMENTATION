@@ -17,8 +17,7 @@ enum QueryType{
 };
 
 struct Node{
-    Node *left,*right,*parent;
-    QueryType opType;
+    Node *left=NULL,*right=NULL,*parent=NULL;
     CNF *cnf;
 	Record *literal;
 	Schema *outputSchema;
@@ -31,14 +30,7 @@ struct Node{
     string dbfilePath;
     virtual void Execute();
     virtual void Print();
-    Node(){};
-    Node(QueryType type,Node *parent,int lPipe,int rPipe,int oPipe,string dbfile):
-    opType(type),
-    left(nullptr),
-    right(nullptr),
-    parent(parent),
-    dbfilePath(dbfile)
-    {};
+    Node():cnf(new CNF()),literal(new Record()){};
 };
 
 struct SelectFNode:public Node{

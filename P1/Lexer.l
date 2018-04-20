@@ -89,7 +89,7 @@ void close_lexical_parser () { yy_delete_buffer (yylex_buf_state); }
   			return(Float);
 			}
 
-[A-Za-z][A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
+[A-Za-z][\.A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
   			return(Name);
 			}     
 

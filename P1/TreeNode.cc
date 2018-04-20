@@ -1,13 +1,14 @@
 #include "TreeNode.h"
 
 void SelectFNode::Print(){
-	if(left)
+    if(left!=nullptr)
         left->Print();
 	cout <<"*****************"<<endl;
 	cout <<"SelectFromFile Operation"<<endl;
 	cout <<"Input File:	"<<dbfilePath<<endl;
 	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl <<outputSchema<<endl;
+	cout <<"Output Schema: " <<endl;
+    outputSchema->Print();
 	cout <<"Select CNF: " <<endl;
 	cout <<"\t"; cnf->Print();
 	cout <<"\n\n";

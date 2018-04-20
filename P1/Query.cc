@@ -1,6 +1,7 @@
 #include "Query.h"
 using namespace std;
 
+
 void Query::JoinsAndSelects(std::vector<AndList*> &joins, std::vector<AndList*> &selects,std::vector<AndList*> &selAboveJoin){
     OrList * aOrList;
     AndList *aAndList = this->cnfAndList;
@@ -121,233 +122,236 @@ Query:: Query(struct FuncOperator *finalFunction,
             distinctFunc(distinct_func),
             s(s)
             {
-                TableList *list=tables;
-				//Need to implement to work joins
-				std::vector<AndList*> joins;
-	            std::vector<AndList*> selectors, selAboveJoin;
-                std::unordered_map<string,AndList *> select;//=Selectors()
-                while(list){
-                    if(list->aliasAs){
-                        s->CopyRel(list->tableName,list->aliasAs);
-                    }
-                    list=list->next;
-                }
+                 TableList *list=tables;
+ 				//Need to implement to work joins
+ 				std::vector<AndList*> joins;
+ 	            std::vector<AndList*> selectors, selAboveJoin;
+                std::unordered_map<string,AndList *> select(std::move(Selectors(selectors)));
+				while(list){
+                     if(list->aliasAs){
+                         s->CopyRel(list->tableName,list->aliasAs);
+                     }
+                     list=list->next;
+                 }
                 root=new Node();
                 vector<AndList *> orderJoin;//TODO:(std::move(JoinOrder(joins)));
-				//Building the select Node
-				std::map<string,Node *> selectNode;
-				list=tables;
-				while(list){
-					Node *join=new SelectFNode();
-					join->dbfilePath=dir+string(list->tableName);
-					join->oPipe=pipeSelect++;
-					join->outputSchema=new Schema(&catalog[0u],list->tableName);
-					string relName(list->tableName);
-					if(list->aliasAs){
-						join->outputSchema->AdjustSchemaWithAlias(list->aliasAs);
-						relName=string(list->aliasAs);
-					}
-					AndList *andList=nullptr;
-					for(auto it:select){
-						if(!relName.compare(it.first)){
-							andList=it.second;
-							break;
-						}
-					}
-					join->cnf->GrowFromParseTree(andList,join->outputSchema,*(join->literal));
-					selectNode.emplace(relName,join);
+// 				//Building the select Node
+ 				std::map<string,Node *> selectNode;
+ 				list=tables;
+ 				while(list){
+ 					Node *join=new SelectFNode();
+ 					join->dbfilePath=dir+string(list->tableName);
+ 					join->oPipe=pipeSelect++;
+ 					join->outputSchema=new Schema(&catalog[0u],list->tableName);
+ 					string relName(list->tableName);
+ 					if(list->aliasAs){
+ 						join->outputSchema->AdjustSchemaWithAlias(list->aliasAs);
+ 						relName=string(list->aliasAs);
+ 					}
+ 					AndList *andList=nullptr;
+ 					for(auto it:select){
+ 						if(!relName.compare(it.first)){
+ 							andList=it.second;
+ 							break;
+ 						}
+ 					}
+					join->cnf=new CNF();
+ 					//join->cnf->GrowFromParseTree(andList,join->outputSchema,*(join->literal));
+ 					selectNode.emplace(relName,join);
+					list=list->next;
+					join->Print();
 				}
+				
+// 				//Building Joins
+// 				Node *join=new JoinNode();
+// 				unordered_map<string,Node *> joinNode;
+// 				for(auto it:orderJoin){
+// 					AndList *inner=it;
+// 					Operand *left=inner->left->left->left;
+// 					string leftRel,rightRel;
+// 					//this->statistics->ParseRelation(string(leftAtt->value), leftRel);
+// 					//same for right
+// 					Node *leftUpMost =joinNode[leftRel];
+// 					Node *rightUpMost=joinNode[rightRel];
+// 					if(!leftUpMost && !rightUpMost){
+// 						join->left=selectNode[leftRel];
+// 						join->right=selectNode[rightRel];
+// 						join->outputSchema=new Schema(join->left->outputSchema,join->right->outputSchema);//need to deal with it
+// 					}
+// 					else if(leftUpMost){
+// 						while(leftUpMost->parent )
+// 							leftUpMost = leftUpMost->parent;
+// 						join->left = leftUpMost; 
+// 						leftUpMost->parent = join;
+// 						join->right = selectNode[rightRel];
+// 					}
+// 					else if(rightUpMost) { //!A and B
+// 						while(rightUpMost->parent)
+// 							rightUpMost = rightUpMost->parent;
+// 						join->left = rightUpMost;
+// 						rightUpMost->parent = join;
+// 						join->right = selectNode[leftRel];
+// 					} 
+// 					else { // A and B
+// 						while(leftUpMost->parent )
+// 							leftUpMost = leftUpMost->parent;
+// 						while(rightUpMost->parent)
+// 							rightUpMost = rightUpMost->parent;
+// 						join->left = leftUpMost;
+// 						leftUpMost->parent = join;
+// 						join->right  = rightUpMost;
+// 						rightUpMost->parent = join;
+// 					}
+// 				joinNode[leftRel] = join;
+// 				joinNode[rightRel] = join;
+// 				join->lPipe = join->left->oPipe;
+// 				join->rPipe = join->right->oPipe;
+// 				join->outputSchema = new Schema(join->left->outputSchema, join->right->outputSchema);
+// 				join->oPipe = pipeSelect++;	
+// //				join->cnf->GrowFromParseTree(aAndList, join->outputSchema, *(join->literal));
+// 				join->cnf->GrowFromParseTree(inner, join->left->outputSchema, join->right->outputSchema, *(join->literal));
+// 				}
 
-				//Building Joins
-				Node *join=new JoinNode();
-				unordered_map<string,Node *> joinNode;
-				for(auto it:orderJoin){
-					AndList *inner=it;
-					Operand *left=inner->left->left->left;
-					string leftRel,rightRel;
-					//this->statistics->ParseRelation(string(leftAtt->value), leftRel);
-					//same for right
-					Node *leftUpMost =joinNode[leftRel];
-					Node *rightUpMost=joinNode[rightRel];
-					if(!leftUpMost && !rightUpMost){
-						join->left=selectNode[leftRel];
-						join->right=selectNode[rightRel];
-						join->outputSchema=new Schema(join->left->outputSchema,join->right->outputSchema);//need to deal with it
-					}
-					else if(leftUpMost){
-						while(leftUpMost->parent )
-							leftUpMost = leftUpMost->parent;
-						join->left = leftUpMost; 
-						leftUpMost->parent = join;
-						join->right = selectNode[rightRel];
-					}
-					else if(rightUpMost) { //!A and B
-						while(rightUpMost->parent)
-							rightUpMost = rightUpMost->parent;
-						join->left = rightUpMost;
-						rightUpMost->parent = join;
-						join->right = selectNode[leftRel];
-					} 
-					else { // A and B
-						while(leftUpMost->parent )
-							leftUpMost = leftUpMost->parent;
-						while(rightUpMost->parent)
-							rightUpMost = rightUpMost->parent;
-						join->left = leftUpMost;
-						leftUpMost->parent = join;
-						join->right  = rightUpMost;
-						rightUpMost->parent = join;
-					}
-				joinNode[leftRel] = join;
-				joinNode[rightRel] = join;
-				join->lPipe = join->left->oPipe;
-				join->rPipe = join->right->oPipe;
-				join->outputSchema = new Schema(join->left->outputSchema, join->right->outputSchema);
-				join->oPipe = pipeSelect++;	
-//				join->cnf->GrowFromParseTree(aAndList, join->outputSchema, *(join->literal));
-				join->cnf->GrowFromParseTree(inner, join->left->outputSchema, join->right->outputSchema, *(join->literal));
-				}
+// 				//Select Above join TODO
+// 				Node *selAbvJoin=nullptr;
+// 				//Building GroupBy
+// 				Node *groupBy=nullptr;
+// 				if(groupAtts){
+// 					groupBy=new GroupByNode();
+// 					if(selAbvJoin) {
+// 						groupBy ->left = selAbvJoin;
+// 					} else if(join) {
+// 						groupBy->left = join;
+// 					} else {
+// 						groupBy->left = selectNode.begin()->second;
+// 					}
+// 					groupBy->lPipe=groupBy->left->oPipe;
+// 					groupBy->oPipe=pipeSelect++;
+// 					groupBy->function=GenerateFunc(groupBy->left->outputSchema);
+// 					groupBy->order=GenerateOM(groupBy->left->outputSchema);
+// 					Attribute DA = {"double", Double};
+// 					Attribute attr;
+// 					attr.name = (char *)"sum";
+// 					attr.myType = Double;
+// 					NameList *attName = groupAtts;
+// 					Schema *schema = new Schema ((char *)"dummy", 1, &attr);
+// 					int numGroupAttr=0;
+// 					while(attName){
+// 						numGroupAttr++;
+// 						attName=attName->next;
+// 					}
+// 					if(!numGroupAttr)
+// 						groupBy->outputSchema=schema;
+// 					else{
+// 						Attribute *attrs = new Attribute[numGroupAttr];
+// 						int i = 0;
+// 						attName = groupAtts;
+// 						while(attName) {
+// 							attrs[i].name = &string(attName->name)[0u];
+// 							attrs[i++].myType = groupBy->left->outputSchema->FindType(attName->name);
+// 							attName = attName->next;
+// 						}
+// 						Schema *outSchema = new Schema((char *)"dummy", numGroupAttr, attrs);
+// 						groupBy->outputSchema = new Schema(schema, outSchema);
+// 					}
+// 				}
 
-				//Select Above join TODO
-				Node *selAbvJoin=nullptr;
-				//Building GroupBy
-				Node *groupBy=nullptr;
-				if(groupAtts){
-					groupBy=new GroupByNode();
-					if(selAbvJoin) {
-						groupBy ->left = selAbvJoin;
-					} else if(join) {
-						groupBy->left = join;
-					} else {
-						groupBy->left = selectNode.begin()->second;
-					}
-					groupBy->lPipe=groupBy->left->oPipe;
-					groupBy->oPipe=pipeSelect++;
-					groupBy->function=GenerateFunc(groupBy->left->outputSchema);
-					groupBy->order=GenerateOM(groupBy->left->outputSchema);
-					Attribute DA = {"double", Double};
-					Attribute attr;
-					attr.name = (char *)"sum";
-					attr.myType = Double;
-					NameList *attName = groupAtts;
-					Schema *schema = new Schema ((char *)"dummy", 1, &attr);
-					int numGroupAttr=0;
-					while(attName){
-						numGroupAttr++;
-						attName=attName->next;
-					}
-					if(!numGroupAttr)
-						groupBy->outputSchema=schema;
-					else{
-						Attribute *attrs = new Attribute[numGroupAttr];
-						int i = 0;
-						attName = groupAtts;
-						while(attName) {
-							attrs[i].name = &string(attName->name)[0u];
-							attrs[i++].myType = groupBy->left->outputSchema->FindType(attName->name);
-							attName = attName->next;
-						}
-						Schema *outSchema = new Schema((char *)"dummy", numGroupAttr, attrs);
-						groupBy->outputSchema = new Schema(schema, outSchema);
-					}
-				}
+// 				//Sum function building from here
 
-				//Sum function building from here
-
-				Node *sum=nullptr;
-				if(!groupBy && finalFunction){
-					sum=new SumNode();
-					if(selAbvJoin)
-						sum->left=selAbvJoin;
-					else if(join)
-						sum->left=join;
-					else
-						sum->left=selectNode.begin()->second;
-					sum->left->lPipe=sum->left->oPipe;
-					sum->oPipe=pipeSelect++;
-					sum->function=GenerateFunc(sum->left->outputSchema);
-					Attribute attr;
-					attr.name="sum";
-					attr.myType=Double;
-					sum->outputSchema=new Schema((char *)"Dummy",1,&attr);
-				}
+// 				Node *sum=nullptr;
+// 				if(!groupBy && finalFunction){
+// 					sum=new SumNode();
+// 					if(selAbvJoin)
+// 						sum->left=selAbvJoin;
+// 					else if(join)
+// 						sum->left=join;
+// 					else
+// 						sum->left=selectNode.begin()->second;
+// 					sum->left->lPipe=sum->left->oPipe;
+// 					sum->oPipe=pipeSelect++;
+// 					sum->function=GenerateFunc(sum->left->outputSchema);
+// 					Attribute attr;
+// 					attr.name="sum";
+// 					attr.myType=Double;
+// 					sum->outputSchema=new Schema((char *)"Dummy",1,&attr);
+// 				}
 
 
-				//Project TODO
-				Node *project = new ProjectNode();
-				int outputNum = 0;
-				NameList *name = selectAtts;
-				Attribute *outputAtts;
-				int ithAttr = 0;
-				while(name) {  // Getting the output Attr num
-					outputNum++;
-					name = name->next;
-				}
-				if(groupBy){
-					project->left=groupBy;
-					outputNum++;
-					project->keepMe = new int[outputNum];
-					project->keepMe[0] = groupBy->outputSchema->Find((char *)"sum");
-					outputAtts = new Attribute[outputNum+1];
-					outputAtts[0].name = (char *)"sum";
-					outputAtts[0].myType = Double;
-					ithAttr = 1;
-				}
-				else if(sum) { // we have SUM
-					project->left = sum;
-					outputNum++;
-					project->keepMe = new int[outputNum];
-					project->keepMe[0] = sum->outputSchema->Find((char *) "sum");
-					outputAtts = new Attribute[outputNum];
-					outputAtts[0].name = (char*)"sum";
-					outputAtts[0].myType = Double;
-					ithAttr = 1;
-				}
-				else if(join) {
-					project->left = join;
-					if(outputNum == 0) {
-						cerr <<"No attributes assigned to select!"<<endl;
-						return ;
-					}
-					project->keepMe = new int[outputNum];
-					outputAtts = new Attribute[outputNum];
-				}
-				else {
-					project->left = selectNode.begin()->second;
-					if(outputNum == 0) {
-						cerr <<"No attributes assigned to select!"<<endl;
-						return ;
-					}
-					project->keepMe = new int[outputNum];
-					outputAtts = new Attribute[outputNum];
-				}
-				name = this->selectAtts;
-				while(name) {
-					project->keepMe[ithAttr] = project->left->outputSchema->Find(name->name);
-					outputAtts[ithAttr].name = name->name;
-					outputAtts[ithAttr].myType = project->left->outputSchema->FindType(name->name);
-					ithAttr++;
-					name = name->next;
-				}
-				//TODO
-				project->numAttsOutput = project->left->outputSchema->GetNumAtts();
-				project->numAttsOutput = outputNum;
-				project->lPipe = project->left->oPipe;
-				project->oPipe = pipeSelect++;
-				project->outputSchema = new Schema((char*)"dummy", outputNum, outputAtts);
-				root=project;
+// 				//Project TODO
+// 				Node *project = new ProjectNode();
+// 				int outputNum = 0;
+// 				NameList *name = selectAtts;
+// 				Attribute *outputAtts;
+// 				int ithAttr = 0;
+// 				while(name) {  // Getting the output Attr num
+// 					outputNum++;
+// 					name = name->next;
+// 				}
+// 				if(groupBy){
+// 					project->left=groupBy;
+// 					outputNum++;
+// 					project->keepMe = new int[outputNum];
+// 					project->keepMe[0] = groupBy->outputSchema->Find((char *)"sum");
+// 					outputAtts = new Attribute[outputNum+1];
+// 					outputAtts[0].name = (char *)"sum";
+// 					outputAtts[0].myType = Double;
+// 					ithAttr = 1;
+// 				}
+// 				else if(sum) { // we have SUM
+// 					project->left = sum;
+// 					outputNum++;
+// 					project->keepMe = new int[outputNum];
+// 					project->keepMe[0] = sum->outputSchema->Find((char *) "sum");
+// 					outputAtts = new Attribute[outputNum];
+// 					outputAtts[0].name = (char*)"sum";
+// 					outputAtts[0].myType = Double;
+// 					ithAttr = 1;
+// 				}
+// 				else if(join) {
+// 					project->left = join;
+// 					if(outputNum == 0) {
+// 						cerr <<"No attributes assigned to select!"<<endl;
+// 						return ;
+// 					}
+// 					project->keepMe = new int[outputNum];
+// 					outputAtts = new Attribute[outputNum];
+// 				}
+// 				else {
+// 					project->left = selectNode.begin()->second;
+// 					if(outputNum == 0) {
+// 						cerr <<"No attributes assigned to select!"<<endl;
+// 						return ;
+// 					}
+// 					project->keepMe = new int[outputNum];
+// 					outputAtts = new Attribute[outputNum];
+// 				}
+// 				name = this->selectAtts;
+// 				while(name) {
+// 					project->keepMe[ithAttr] = project->left->outputSchema->Find(name->name);
+// 					outputAtts[ithAttr].name = name->name;
+// 					outputAtts[ithAttr].myType = project->left->outputSchema->FindType(name->name);
+// 					ithAttr++;
+// 					name = name->next;
+// 				}
+// 				//TODO
+// 				project->numAttsOutput = project->left->outputSchema->GetNumAtts();
+// 				project->numAttsOutput = outputNum;
+// 				project->lPipe = project->left->oPipe;
+// 				project->oPipe = pipeSelect++;
+// 				project->outputSchema = new Schema((char*)"dummy", outputNum, outputAtts);
+// 				root=project;
 
-				//DISTINCT TODO
+// 				//DISTINCT TODO
 
-				Node *distinct = nullptr;
-				if(distinctAtts){
-					distinct=new DistinctNode();
-					distinct->left = project;
-					distinct->lPipe = distinct->left->oPipe;
-					distinct->outputSchema = distinct->left->outputSchema;
-					distinct->oPipe = pipeSelect++;
-					root = distinct;
-				}
+// 				Node *distinct = nullptr;
+// 				if(distinctAtts){
+// 					distinct=new DistinctNode();
+// 					distinct->left = project;
+// 					distinct->lPipe = distinct->left->oPipe;
+// 					distinct->outputSchema = distinct->left->outputSchema;
+// 					distinct->oPipe = pipeSelect++;
+// 					root = distinct;
+// 				}
             }
             
 void Query::PrintQuery(){

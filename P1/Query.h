@@ -36,6 +36,7 @@ class Query{
     void JoinsAndSelects(std::vector<AndList*> &joins, std::vector<AndList*> &selects,std::vector<AndList*> &selAboveJoin); 
     Function *GenerateFunc(Schema *schema);
     OrderMaker *GenerateOM(Schema *schema);
+    map<string, AndList*>OptimizeSelectAndApply(vector<AndList*> selects);
     public:
     Query(struct FuncOperator *finalFunction,
 			struct TableList *tables,
