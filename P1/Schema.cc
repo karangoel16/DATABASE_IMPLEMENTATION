@@ -60,6 +60,19 @@ Schema :: Schema (char *fpath, int num_atts, Attribute *atts) {
 	}
 }
 
+
+Schema :: Schema(Schema *left, Schema *right):numAtts(left->numAtts+right->numAtts)
+{
+	myAtts = new Attribute[numAtts];
+	for(unsigned i = 0; i < left->numAtts; i++){
+		myAtts[i] = left->myAtts[i];
+	}
+	for(unsigned i = 0; i < right->numAtts; i++){
+		myAtts[i+left->numAtts] = right->myAtts[i];
+	}
+
+}
+
 Schema :: Schema (char *fName, char *relName) {
 
 	FILE *foo = fopen (fName, "r");
@@ -151,8 +164,15 @@ Schema :: Schema (char *fName, char *relName) {
 			exit (1);
 		}
 	}
-
 	fclose (foo);
+}
+
+void Schema::AdjustSchemaWithAlias(char *alias) {
+	for(int i=0; i<numAtts; i++) {
+		char *newName = new char[strlen(alias) + strlen(myAtts[i].name)+2];
+		sprintf(newName, "%s.%s", alias, myAtts[i].name);
+		myAtts[i].name = newName;
+	}
 }
 
 Schema :: ~Schema () {

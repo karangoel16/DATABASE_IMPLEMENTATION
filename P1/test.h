@@ -9,7 +9,7 @@
 #include "Pipe.h"
 #include "DBFile.h"
 #include "Record.h"
-
+#pragma ones
 using namespace std;
 
 // test settings file should have the 

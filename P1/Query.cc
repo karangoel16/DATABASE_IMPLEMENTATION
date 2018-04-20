@@ -1,12 +1,355 @@
 #include "Query.h"
-void Query::ExecuteQuery(){
-    Node *temp=new Node();
-    temp->left=root;
-    temp->lPipe = root->oPipe;
-    temp->Execute();
-    //Need to insert something here
+using namespace std;
+
+void Query::JoinsAndSelects(std::vector<AndList*> &joins, std::vector<AndList*> &selects,std::vector<AndList*> &selAboveJoin){
+    OrList * aOrList;
+    AndList *aAndList = this->cnfAndList;
+    while(aAndList){
+        aOrList = aAndList->left;
+		if(!aOrList) {
+			cerr <<"Error in cnf AndList"<<endl;
+			return;
+		}
+        if(aOrList->left->code == EQUALS && aOrList->left->left->code == NAME && aOrList->left->right->code == NAME){ //A.a = B.b
+			AndList *newAnd = new AndList();
+			newAnd->left= aOrList;
+			newAnd->rightAnd = NULL;
+			joins.push_back(newAnd);
+		} 
+        else 
+        {
+			if(!aOrList->rightOr) {
+				AndList *newAnd = new AndList();
+				newAnd->left= aOrList;
+				newAnd->rightAnd = NULL;
+				selects.push_back(newAnd);
+			} else {
+				std::vector<string> involvedTables;
+				OrList *olp = aOrList;
+				while(!aOrList){
+					Operand *op = aOrList->left->left;
+					if(op->code != NAME){
+						op = aOrList->left->right;
+					}
+					string rel;
+					/*
+					if(s->ParseRelation(string(op->value), rel) ==0) {
+						cerr <<"Error in parse relations"<<endl;
+						return;
+					}*/
+					if(!involvedTables.size())
+						involvedTables.push_back(rel);
+					else if(rel.compare(involvedTables[0]) != 0)
+						involvedTables.push_back(rel);
+					aOrList = aOrList->rightOr;
+				}
+
+				if(involvedTables.size() > 1){
+					AndList *newAnd = new AndList();
+					//newAnd->left= olp;
+					//newAnd->rightAnd = nullptr;
+					//selAboveJoin.push_back(newAnd);
+				}
+				else{
+					AndList *newAnd = new AndList();
+					newAnd->left= olp;
+					newAnd->rightAnd = nullptr;
+					selects.push_back(newAnd);
+				}
+			}
+		}
+		aAndList = aAndList->rightAnd;
+	}
 }
 
+Function *Query::GenerateFunc(Schema *schema) {
+	Function *func = new Function();
+	func->GrowFromParseTree(this->finalFunction, *schema);
+	return func;
+}
+
+
+OrderMaker *Query::GenerateOM(Schema *schema) {
+	OrderMaker *order = new OrderMaker();
+	NameList *name = this->groupAtts;
+	while(name) {
+		order->whichAtts[order->numAtts] = schema->Find(name->name);
+		order->whichTypes[order->numAtts] = schema->FindType(name->name);
+		order->numAtts++;
+		name=name->next;
+	}
+	return order;
+}
+
+std::unordered_map<string, AndList *> Query::Selectors(std::vector<AndList *> lists){
+    unordered_map<string,AndList *> mp;
+    for(auto list:lists){
+        AndList *aAndList = list;
+		Operand *op = aAndList->left->left->left;
+		if(op->code != NAME)
+			op = aAndList->left->left->right;
+		string rel;
+		//s->ParseRelation(string(op->value), rel);
+        auto mit=mp.begin();
+        for(;mit!=mp.end();mit++){
+            if(mit->first.compare(rel) == 0) {
+                AndList *lastAnd = mit->second;
+                while(lastAnd->rightAnd!=NULL)
+                    lastAnd = lastAnd->rightAnd;
+                lastAnd->rightAnd = aAndList;
+                break;
+            }
+        }
+        if(mit == mp.end())
+            mp[rel]=aAndList;
+    }
+    return mp;
+}
+
+Query:: Query(struct FuncOperator *finalFunction,
+			struct TableList *tables,
+			struct AndList * boolean,
+			struct NameList * pGrpAtts,
+	        struct NameList * pAttsToSelect,
+	        int distinct_atts, int distinct_func, Statistics *s,std::string dir,string tpch,string catalog):root(new Node()),
+            finalFunction(finalFunction),
+            tables(tables),
+            cnfAndList(boolean),
+            groupAtts(pGrpAtts),
+            selectAtts(pAttsToSelect),
+            distinctAtts(distinctAtts),
+            distinctFunc(distinct_func),
+            s(s)
+            {
+                TableList *list=tables;
+				//Need to implement to work joins
+				std::vector<AndList*> joins;
+	            std::vector<AndList*> selectors, selAboveJoin;
+                std::unordered_map<string,AndList *> select;//=Selectors()
+                while(list){
+                    if(list->aliasAs){
+                        s->CopyRel(list->tableName,list->aliasAs);
+                    }
+                    list=list->next;
+                }
+                root=new Node();
+                vector<AndList *> orderJoin;//TODO:(std::move(JoinOrder(joins)));
+				//Building the select Node
+				std::map<string,Node *> selectNode;
+				list=tables;
+				while(list){
+					Node *join=new SelectFNode();
+					join->dbfilePath=dir+string(list->tableName);
+					join->oPipe=pipeSelect++;
+					join->outputSchema=new Schema(&catalog[0u],list->tableName);
+					string relName(list->tableName);
+					if(list->aliasAs){
+						join->outputSchema->AdjustSchemaWithAlias(list->aliasAs);
+						relName=string(list->aliasAs);
+					}
+					AndList *andList=nullptr;
+					for(auto it:select){
+						if(!relName.compare(it.first)){
+							andList=it.second;
+							break;
+						}
+					}
+					join->cnf->GrowFromParseTree(andList,join->outputSchema,*(join->literal));
+					selectNode.emplace(relName,join);
+				}
+
+				//Building Joins
+				Node *join=new JoinNode();
+				unordered_map<string,Node *> joinNode;
+				for(auto it:orderJoin){
+					AndList *inner=it;
+					Operand *left=inner->left->left->left;
+					string leftRel,rightRel;
+					//this->statistics->ParseRelation(string(leftAtt->value), leftRel);
+					//same for right
+					Node *leftUpMost =joinNode[leftRel];
+					Node *rightUpMost=joinNode[rightRel];
+					if(!leftUpMost && !rightUpMost){
+						join->left=selectNode[leftRel];
+						join->right=selectNode[rightRel];
+						join->outputSchema=new Schema(join->left->outputSchema,join->right->outputSchema);//need to deal with it
+					}
+					else if(leftUpMost){
+						while(leftUpMost->parent )
+							leftUpMost = leftUpMost->parent;
+						join->left = leftUpMost; 
+						leftUpMost->parent = join;
+						join->right = selectNode[rightRel];
+					}
+					else if(rightUpMost) { //!A and B
+						while(rightUpMost->parent)
+							rightUpMost = rightUpMost->parent;
+						join->left = rightUpMost;
+						rightUpMost->parent = join;
+						join->right = selectNode[leftRel];
+					} 
+					else { // A and B
+						while(leftUpMost->parent )
+							leftUpMost = leftUpMost->parent;
+						while(rightUpMost->parent)
+							rightUpMost = rightUpMost->parent;
+						join->left = leftUpMost;
+						leftUpMost->parent = join;
+						join->right  = rightUpMost;
+						rightUpMost->parent = join;
+					}
+				joinNode[leftRel] = join;
+				joinNode[rightRel] = join;
+				join->lPipe = join->left->oPipe;
+				join->rPipe = join->right->oPipe;
+				join->outputSchema = new Schema(join->left->outputSchema, join->right->outputSchema);
+				join->oPipe = pipeSelect++;	
+//				join->cnf->GrowFromParseTree(aAndList, join->outputSchema, *(join->literal));
+				join->cnf->GrowFromParseTree(inner, join->left->outputSchema, join->right->outputSchema, *(join->literal));
+				}
+
+				//Select Above join TODO
+				Node *selAbvJoin=nullptr;
+				//Building GroupBy
+				Node *groupBy=nullptr;
+				if(groupAtts){
+					groupBy=new GroupByNode();
+					if(selAbvJoin) {
+						groupBy ->left = selAbvJoin;
+					} else if(join) {
+						groupBy->left = join;
+					} else {
+						groupBy->left = selectNode.begin()->second;
+					}
+					groupBy->lPipe=groupBy->left->oPipe;
+					groupBy->oPipe=pipeSelect++;
+					groupBy->function=GenerateFunc(groupBy->left->outputSchema);
+					groupBy->order=GenerateOM(groupBy->left->outputSchema);
+					Attribute DA = {"double", Double};
+					Attribute attr;
+					attr.name = (char *)"sum";
+					attr.myType = Double;
+					NameList *attName = groupAtts;
+					Schema *schema = new Schema ((char *)"dummy", 1, &attr);
+					int numGroupAttr=0;
+					while(attName){
+						numGroupAttr++;
+						attName=attName->next;
+					}
+					if(!numGroupAttr)
+						groupBy->outputSchema=schema;
+					else{
+						Attribute *attrs = new Attribute[numGroupAttr];
+						int i = 0;
+						attName = groupAtts;
+						while(attName) {
+							attrs[i].name = &string(attName->name)[0u];
+							attrs[i++].myType = groupBy->left->outputSchema->FindType(attName->name);
+							attName = attName->next;
+						}
+						Schema *outSchema = new Schema((char *)"dummy", numGroupAttr, attrs);
+						groupBy->outputSchema = new Schema(schema, outSchema);
+					}
+				}
+
+				//Sum function building from here
+
+				Node *sum=nullptr;
+				if(!groupBy && finalFunction){
+					sum=new SumNode();
+					if(selAbvJoin)
+						sum->left=selAbvJoin;
+					else if(join)
+						sum->left=join;
+					else
+						sum->left=selectNode.begin()->second;
+					sum->left->lPipe=sum->left->oPipe;
+					sum->oPipe=pipeSelect++;
+					sum->function=GenerateFunc(sum->left->outputSchema);
+					Attribute attr;
+					attr.name="sum";
+					attr.myType=Double;
+					sum->outputSchema=new Schema((char *)"Dummy",1,&attr);
+				}
+
+
+				//Project TODO
+				Node *project = new ProjectNode();
+				int outputNum = 0;
+				NameList *name = selectAtts;
+				Attribute *outputAtts;
+				int ithAttr = 0;
+				while(name) {  // Getting the output Attr num
+					outputNum++;
+					name = name->next;
+				}
+				if(groupBy){
+					project->left=groupBy;
+					outputNum++;
+					project->keepMe = new int[outputNum];
+					project->keepMe[0] = groupBy->outputSchema->Find((char *)"sum");
+					outputAtts = new Attribute[outputNum+1];
+					outputAtts[0].name = (char *)"sum";
+					outputAtts[0].myType = Double;
+					ithAttr = 1;
+				}
+				else if(sum) { // we have SUM
+					project->left = sum;
+					outputNum++;
+					project->keepMe = new int[outputNum];
+					project->keepMe[0] = sum->outputSchema->Find((char *) "sum");
+					outputAtts = new Attribute[outputNum];
+					outputAtts[0].name = (char*)"sum";
+					outputAtts[0].myType = Double;
+					ithAttr = 1;
+				}
+				else if(join) {
+					project->left = join;
+					if(outputNum == 0) {
+						cerr <<"No attributes assigned to select!"<<endl;
+						return ;
+					}
+					project->keepMe = new int[outputNum];
+					outputAtts = new Attribute[outputNum];
+				}
+				else {
+					project->left = selectNode.begin()->second;
+					if(outputNum == 0) {
+						cerr <<"No attributes assigned to select!"<<endl;
+						return ;
+					}
+					project->keepMe = new int[outputNum];
+					outputAtts = new Attribute[outputNum];
+				}
+				name = this->selectAtts;
+				while(name) {
+					project->keepMe[ithAttr] = project->left->outputSchema->Find(name->name);
+					outputAtts[ithAttr].name = name->name;
+					outputAtts[ithAttr].myType = project->left->outputSchema->FindType(name->name);
+					ithAttr++;
+					name = name->next;
+				}
+				//TODO
+				project->numAttsOutput = project->left->outputSchema->GetNumAtts();
+				project->numAttsOutput = outputNum;
+				project->lPipe = project->left->oPipe;
+				project->oPipe = pipeSelect++;
+				project->outputSchema = new Schema((char*)"dummy", outputNum, outputAtts);
+				root=project;
+
+				//DISTINCT TODO
+
+				Node *distinct = nullptr;
+				if(distinctAtts){
+					distinct=new DistinctNode();
+					distinct->left = project;
+					distinct->lPipe = distinct->left->oPipe;
+					distinct->outputSchema = distinct->left->outputSchema;
+					distinct->oPipe = pipeSelect++;
+					root = distinct;
+				}
+            }
+            
 void Query::PrintQuery(){
     if(root==nullptr){
         std::cout<<"The Tree is null\n";
@@ -15,125 +358,7 @@ void Query::PrintQuery(){
     root->Print();
 }
 
-void Node::Print(){
-    if(left)
-        left->Print();
-    switch(opType) {
-	case SELECTF:
-		cout <<"*****************"<<endl;
-		cout <<"SelectFromFile Operation"<<endl;
-		cout <<"Input File:	"<<dbfilePath<<endl;
-		cout <<"Output Pipe: "<<oPipe<<endl;
-		cout <<"Output Schema: " <<endl <<outputSchema<<endl;
-		cout <<"Select CNF: " <<endl;
-		cout <<"\t"; cnf->Print();
-		cout <<"\n\n";
-		break;
-	case SELECTP:
-		cout <<"*****************"<<endl;
-		cout <<"SelectFromPipe Operation"<<endl;
-		cout <<"Input Pipe:	"<<lPipe<<endl;
-		cout <<"Output Pipe: "<<oPipe<<endl;
-		cout <<"Output Schema: " <<endl<<outputSchema<<endl;
-		cout <<"Select CNF: " <<endl;
-		cout <<"\t"; cnf->Print();
-		cout <<"\n\n";
-		break;
-	case PROJECT:
-		cout <<"*****************"<<endl;
-		cout <<"Project Operation"<<endl;
-		cout <<"Input Pipe:	"<<lPipe<<endl;
-		cout <<"Output Pipe: "<<oPipe<<endl;
-		cout <<"Output Schema: " <<endl<<outputSchema<<endl;;
-		cout <<"Attributes to keep: "<<endl;
-		cout <<"\t";
-		for(int i=0;i<numAttsOutput;i++) {
-			cout <<keepMe[i] <<", ";
-		}
-		cout <<endl;
-		cout <<"\n";
-		break;
-	case JOIN:
-		cout <<"*****************"<<endl;
-		cout <<"Join Operation"<<endl;
-		cout <<"Left Input Pipe: "<<lPipe<<endl;
-		cout <<"Right Input Pipe: "<<rPipe<<endl;
-		cout <<"Output Pipe: "<<oPipe<<endl;
-		cout <<"Output Schema: " <<endl<<outputSchema<<endl;
-		cout <<"Select CNF: " <<endl;
-		cout <<"\t"; cnf->Print();
-		cout <<"\n\n";
-		break;
-	case SUM:
-		cout <<"*****************"<<endl;
-		cout <<"Sum Operation"<<endl;
-		cout <<"Input Pipe:	"<<lPipe<<endl;
-		cout <<"Output Pipe: "<<oPipe<<endl;
-		cout <<"Output Schema: " <<endl<<outputSchema<<endl;
-		cout <<"Sum Function: " <<endl;
-		    function->Print();
-		cout <<endl;
-		cout <<"\n";
-		break;
-	case GROUPBY:
-		cout <<"*****************"<<endl;
-		cout <<"GroupBy Operation"<<endl;
-		cout <<"Input Pipe:	"<<lPipe<<endl;
-		cout <<"Output Pipe: "<<oPipe<<endl;
-		cout <<"Output Schema: " <<endl<<outputSchema<<endl;
-		cout <<"Group By OrderMaker: " <<endl;
-		order->Print();
-		cout <<endl;
-		cout <<"Group By Function: " <<endl;
-		function->Print();
-		cout <<endl;
-		cout <<"\n";
-		break;
-	case DISTINCT:
-		cout <<"*****************"<<endl;
-		cout <<"Duplicate Removal Operation"<<endl;
-		cout <<"Input Pipe:	"<<lPipe<<endl;
-		cout <<"Output Pipe: "<<oPipe<<endl;
-		cout <<"Output Schema: " <<endl<<outputSchema<<endl;
-		cout <<"\n";
-		break;
-	case WRITEOUT:
-		cout <<"*****************"<<endl;
-		cout <<"Write Out"<<endl;
-		cout <<"Input Pipe:	"<<lPipe<<endl;
-		cout <<"Output Schema: " <<endl<<outputSchema<<endl;
-		cout <<"\n";
-		break;
-	default:
-		break;
-	}
-    if(right)
-        right->Print();
-}
 
-void Node::Execute(){
-    if(left)
-        left->Execute();
-    if(right)
-        right->Execute();
-    switch(opType){
-        case SELECTF:{
-            SelectFile * sf=new SelectFile();
-            outPipe = new Pipe(PIPE_SIZE);
-            db=new DBFile();
-            db->Open((char *)dbfilePath.c_str());
-            db->MoveFirst();
-            sf->Run(*db,*outPipe,*(cnf),*(literal));
-            break;    
-        };
-        case SELECTP:
-        {
-            /*
-            SelectPipe * sp=new SelectPipe();
-            outPipe = new Pipe(PIPE_SIZE);
-            sp->Run(*pipes[lPipe], *outPipe, *(node->cnf), *(node->literal));
-            break;
-            */
-        };
-    }
+void Query::ExecuteQuery(){
+	NEED_TO_IMPLEMENT
 }

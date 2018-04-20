@@ -34,6 +34,7 @@
         "memory": "cpp",
         "ratio": "cpp",
         "thread": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "unordered_map": "cpp"
     }
 }

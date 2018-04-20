@@ -8,7 +8,7 @@
 #include "Comparison.h"
 #include "ComparisonEngine.h"
 #include "Schema.h"
-#include<string>
+#include <string>
 
 typedef enum {heap, sorted, tree} fType;
 
