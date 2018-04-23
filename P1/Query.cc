@@ -36,36 +36,35 @@ vector<AndList*> Query::OptimizeJoinOrder(vector<AndList*> joins) {
 		this->s->Apply(chooseAndList, aplyrels, 2);
 		joins.erase(joins.begin()+choosePos);
 	}
-	//std::cout<<
 	return orderedAndList;
 }
 
-void Query::JoinsAndSelects(std::vector<AndList*> &joins, std::vector<AndList*> &selects,std::vector<AndList*> &selAboveJoin){
-    OrList * aOrList;
-    AndList *aAndList = this->cnfAndList;
-    while(aAndList){
-        aOrList = aAndList->left;
+void Query::JoinsAndSelects(vector<AndList*> &joins, vector<AndList*> &selects,
+			vector<AndList*> &selAboveJoin) {
+	OrList *aOrList;
+	AndList *aAndList = this->cnfAndList;
+	while(aAndList) {
+		aOrList = aAndList->left;
 		if(!aOrList) {
 			cerr <<"Error in cnf AndList"<<endl;
 			return;
 		}
-        if(aOrList->left->code == EQUALS && aOrList->left->left->code == NAME && aOrList->left->right->code == NAME){ //A.a = B.b
+		if(aOrList->left->code == EQUALS && aOrList->left->left->code == NAME
+					&& aOrList->left->right->code == NAME){ //A.a = B.b
 			AndList *newAnd = new AndList();
 			newAnd->left= aOrList;
 			newAnd->rightAnd = NULL;
 			joins.push_back(newAnd);
-		} 
-        else 
-        {
+		} else {
 			if(!aOrList->rightOr) {
 				AndList *newAnd = new AndList();
 				newAnd->left= aOrList;
 				newAnd->rightAnd = NULL;
 				selects.push_back(newAnd);
-			} else {
-				std::vector<string> involvedTables;
+			} else { 
+				vector<string> involvedTables;
 				OrList *olp = aOrList;
-				while(!aOrList){
+				while(aOrList != NULL){
 					Operand *op = aOrList->left->left;
 					if(op->code != NAME){
 						op = aOrList->left->right;
@@ -75,23 +74,26 @@ void Query::JoinsAndSelects(std::vector<AndList*> &joins, std::vector<AndList*> 
 						cerr <<"Error in parse relations"<<endl;
 						return;
 					}
-					if(!involvedTables.size())
+					if(involvedTables.size() == 0){
 						involvedTables.push_back(rel);
-					else if(rel.compare(involvedTables[0]) != 0)
-						involvedTables.push_back(rel);
+					}
+					else if(rel.compare(involvedTables[0]) != 0){
+							involvedTables.push_back(rel);
+					}
+
 					aOrList = aOrList->rightOr;
 				}
 
 				if(involvedTables.size() > 1){
 					AndList *newAnd = new AndList();
 					newAnd->left= olp;
-					newAnd->rightAnd = nullptr;
+					newAnd->rightAnd = NULL;
 					selAboveJoin.push_back(newAnd);
 				}
 				else{
 					AndList *newAnd = new AndList();
 					newAnd->left= olp;
-					newAnd->rightAnd = nullptr;
+					newAnd->rightAnd = NULL;
 					selects.push_back(newAnd);
 				}
 			}
@@ -165,11 +167,11 @@ Query:: Query(struct FuncOperator *finalFunction,
 				JoinsAndSelects(joins,selectors,selAboveJoin);
                 std::unordered_map<string,AndList *> select(std::move(Selectors(selectors)));
 				while(list){
-                     if(list->aliasAs){
-                         s->CopyRel(list->tableName,list->aliasAs);
-                     }
-                     list=list->next;
-                 }
+					if(list->aliasAs){
+						s->CopyRel(list->tableName,list->aliasAs);
+					}
+					list=list->next;
+                }
                 root=new Node();
 				vector<AndList *> orderJoin(std::move(OptimizeJoinOrder(joins)));
 // 				//Building the select Node
