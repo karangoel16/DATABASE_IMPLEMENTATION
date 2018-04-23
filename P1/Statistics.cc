@@ -232,6 +232,36 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
     return fact * maxTup;
 }
 
+int Statistics::ParseRelation(string name, string &rel) {
+	int prefixPos = name.find(".");
+	if(prefixPos != string::npos) {
+		rel = name.substr(0,prefixPos);
+	}
+	return 1;
+}
+	// } else {
+	// 	//suppkey
+	// 	unordered_map <string, vector<string>*>::iterator crIt =
+	// 			this->m_att_to_rel.find(name);
+	// 	if(crIt == this->m_att_to_rel.end() || crIt->second->size()<1) {
+	// 		cerr <<"Atts: " <<name << " can not find its relations."<<endl;
+	// 		return 0;
+	// 	}
+	// 	vector<string> *rels = crIt->second;
+	// 	if(rels->size() <=0) {
+	// 		cerr <<"Atts: "<<name <<" does not belong to any relations!"<<endl;
+	// 		return 0;
+	// 	}
+	// 	if(rels->size()==1) { //this att belong to only one relation
+	// 		rel = rels->at(0);
+	// 	} else { //this att belong to more than one relations, like s.id, l.id, not happen in TPCH
+	// 		cerr <<"Atts: "<<name<<" is ambiguous!"<<endl;
+	// 		return 0;
+	// 	}
+	// }
+// 	return 1;
+// }
+
 std::ostream& operator<<(std::ostream& os, const Rel& relation){
     os<<relation.numAttr<<" "<<relation.attr.size()<<" ";
     for(auto i:relation.attr){
@@ -277,4 +307,94 @@ std::istream& operator>>(std::istream& is, Statistics& stat){
         stat.estimate[temp]=dbl;
     }
     return is;
+}
+
+void Statistics::LoadAllStatistics() {
+		char *relName[] = {(char*)"supplier",(char*)"partsupp", (char*)"lineitem",
+					(char*)"orders",(char*)"customer",(char*)"nation", (char*)"part", (char*)"region"};
+		AddRel(relName[0],10000);     //supplier
+	    AddRel(relName[1],800000);    //partsupp
+	    AddRel(relName[2],6001215);   //lineitem
+	    AddRel(relName[3],1500000);   //orders
+	    AddRel(relName[4],150000);    //customer
+	    AddRel(relName[5],25);        //nation
+	    AddRel(relName[6], 200000);   //part
+	    AddRel(relName[7], 5);        //region
+//	    AddRel(relName[8], 3);        //mal_test
+
+
+	    AddAtt(relName[0], (char*)"s_suppkey",10000);
+	    AddAtt(relName[0], (char*)"s_nationkey",25);
+		AddAtt(relName[0], (char*)"s_acctbal",9955);
+		AddAtt(relName[0], (char*)"s_name",100000);
+		AddAtt(relName[0], (char*)"s_address",100000);
+		AddAtt(relName[0], (char*)"s_phone",100000);
+		AddAtt(relName[0], (char*)"s_comment",10000);
+
+
+	    AddAtt(relName[1], (char*)"ps_suppkey", 10000);
+	    AddAtt(relName[1], (char*)"ps_partkey", 200000);
+	    AddAtt(relName[1], (char*)"ps_availqty", 9999);
+	    AddAtt(relName[1], (char*)"ps_supplycost", 99865);
+	    AddAtt(relName[1], (char*)"ps_comment", 799123);
+
+
+	    AddAtt(relName[2], (char*) "l_returnflag",3);
+	    AddAtt(relName[2], (char*)"l_discount",11);
+	    AddAtt(relName[2], (char*)"l_shipmode",7);
+	    AddAtt(relName[2], (char*)"l_orderkey",1500000);
+	    AddAtt(relName[2], (char*)"l_receiptdate",0);
+	    AddAtt(relName[2], (char*)"l_partkey",200000);
+	    AddAtt(relName[2], (char*)"l_suppkey",10000);
+	    AddAtt(relName[2], (char*)"l_linenumbe",7);
+	    AddAtt(relName[2], (char*)"l_quantity",50);
+	    AddAtt(relName[2], (char*)"l_extendedprice",933900);
+	    AddAtt(relName[2], (char*)"l_tax",9);
+	    AddAtt(relName[2], (char*)"l_linestatus",2);
+	    AddAtt(relName[2], (char*)"l_shipdate",2526);
+	    AddAtt(relName[2], (char*)"l_commitdate",2466);
+	    AddAtt(relName[2], (char*)"l_shipinstruct",4);
+	    AddAtt(relName[2], (char*)"l_comment",4501941);
+
+
+	    AddAtt(relName[3], (char*)"o_custkey",150000);
+	    AddAtt(relName[3], (char*)"o_orderkey",1500000);
+	    AddAtt(relName[3], (char*)"o_orderdate",2406);
+	    AddAtt(relName[3], (char*)"o_totalprice",1464556);
+	    AddAtt(relName[3], (char*)"o_orderstatus", 3);
+	    AddAtt(relName[3], (char*)"o_orderpriority", 5);
+	    AddAtt(relName[3], (char*)"o_clerk", 1000);
+	    AddAtt(relName[3], (char*)"o_shippriority", 1);
+	    AddAtt(relName[3], (char*)"o_comment", 1478684);
+
+
+	    AddAtt(relName[4], (char*)"c_custkey",150000);
+	    AddAtt(relName[4], (char*)"c_nationkey",25);
+	    AddAtt(relName[4], (char*)"c_mktsegment",5);
+	    AddAtt(relName[4], (char*)"c_name", 150000);
+	    AddAtt(relName[4], (char*)"c_address", 150000);
+	    AddAtt(relName[4], (char*)"c_phone", 150000);
+	    AddAtt(relName[4], (char*)"c_acctbal", 140187);
+	    AddAtt(relName[4], (char*)"c_comment", 149965);
+
+	    AddAtt(relName[5], (char*)"n_nationkey",25);
+	    AddAtt(relName[5], (char*)"n_regionkey",5);
+	    AddAtt(relName[5], (char*)"n_name",25);
+	    AddAtt(relName[5], (char*)"n_comment",25);
+
+	    AddAtt(relName[6], (char*)"p_partkey",200000);
+	    AddAtt(relName[6], (char*)"p_size",50);
+	    AddAtt(relName[6], (char*)"p_container",40);
+	    AddAtt(relName[6], (char*)"p_name", 199996);
+		AddAtt(relName[6], (char*)"p_mfgr", 5);
+		AddAtt(relName[6], (char*)"p_brand", 25);
+		AddAtt(relName[6], (char*)"p_type", 150);
+		AddAtt(relName[6], (char*)"p_retailprice", 20899);
+		AddAtt(relName[6], (char*)"p_comment", 127459);
+
+
+	    AddAtt(relName[7], (char*)"r_regionkey",5);
+	    AddAtt(relName[7], (char*)"r_name",5);
+	    AddAtt(relName[7], (char*)"r_comment",5);
+
 }

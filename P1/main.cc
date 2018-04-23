@@ -22,11 +22,11 @@ extern int distinctFunc;
 
 int main () {
 	setup();
-	cout.flush();
 	Statistics * s=new Statistics();
+	s->LoadAllStatistics();
 	yyparse();
 	Query *q=new Query(finalFunction,tables,boolean,groupingAtts,attsToSelect,distinctAtts,distinctFunc,s,std::string(dbfile_dir),string(tpch_dir),string(catalog_path));
-	//q->PrintQuery();
+	q->PrintQuery();
 	cleanup();
 }	
 

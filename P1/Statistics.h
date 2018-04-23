@@ -34,6 +34,7 @@ class Statistics
 {
 	unordered_map<string,Rel> relation;
 	unordered_map<string,double> estimate;
+	
 	/*
 		we will split the string for finding purose
 		1. We have kept unordered_map for that we don't insert same values in the unordered_map again
@@ -90,7 +91,9 @@ public:
 	Statistics(Statistics &copyMe);	 // Performs deep copy
 	~Statistics();
 
+	int ParseRelation(string name, string &rel);
 
+	void LoadAllStatistics();
 	void AddRel(char *relName, int numTuples);
 	void AddAtt(char *relName, char *attName, int numDistincts);
 	void CopyRel(char *oldName, char *newName);

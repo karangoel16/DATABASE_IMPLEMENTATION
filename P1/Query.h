@@ -13,7 +13,6 @@
 #include "ParseTree.h"
 #include "TreeNode.h"
 #include <map>
-//#include "test.h"
 
 struct Node;
 
@@ -37,6 +36,7 @@ class Query{
     Function *GenerateFunc(Schema *schema);
     OrderMaker *GenerateOM(Schema *schema);
     map<string, AndList*>OptimizeSelectAndApply(vector<AndList*> selects);
+    vector<AndList*> OptimizeJoinOrder(vector<AndList*> joins);
     public:
     Query(struct FuncOperator *finalFunction,
 			struct TableList *tables,

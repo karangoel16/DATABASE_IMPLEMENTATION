@@ -134,7 +134,6 @@ Atts: Name
 {
 	$$ = (struct NameList *) malloc (sizeof (struct NameList));
 	$$->name = $1;
-	std::cout<<$1;
 	$$->next = NULL;
 } 
 
@@ -253,6 +252,16 @@ AndList: '(' OrList ')' AND AndList
         $$ = (struct AndList *) malloc (sizeof (struct AndList));
         $$->left = $2;
         $$->rightAnd = NULL;
+}
+
+| '(' OrList AND OrList ')' 
+{
+		$$ = (struct AndList *) malloc (sizeof (struct AndList));
+		$$->left = $2;
+
+		$$->rightAnd = (struct AndList *) malloc (sizeof (struct AndList));
+		$$->rightAnd->left = $4;
+		$$->rightAnd->rightAnd = NULL;
 }
 ;
 

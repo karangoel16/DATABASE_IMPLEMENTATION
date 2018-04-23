@@ -23,7 +23,8 @@ void SelectPNode::Print(){
 	cout <<"SelectFromPipe Operation"<<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
 	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl<<outputSchema<<endl;
+	cout <<"Output Schema: " <<endl;
+    outputSchema->Print();
 	cout <<"Select CNF: " <<endl;
 	cout <<"\t"; cnf->Print();
 	cout <<"\n\n";
@@ -38,7 +39,8 @@ void ProjectNode::Print(){
 	cout <<"Project Operation"<<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
 	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl<<outputSchema<<endl;;
+	cout <<"Output Schema: " <<endl;
+    outputSchema->Print();
 	cout <<"Attributes to keep: "<<endl;
 	cout <<"\t";
 	for(int i=0;i<numAttsOutput;i++) {
@@ -58,7 +60,8 @@ void JoinNode::Print(){
 	cout <<"Left Input Pipe: "<<lPipe<<endl;
 	cout <<"Right Input Pipe: "<<rPipe<<endl;
 	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl<<outputSchema<<endl;
+	cout <<"Output Schema: " <<endl;
+    outputSchema->Print();
 	cout <<"Select CNF: " <<endl;
 	cout <<"\t"; cnf->Print();
 	cout <<"\n\n";
@@ -73,7 +76,8 @@ void SumNode::Print(){
 	cout <<"Sum Operation"<<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
 	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl<<outputSchema<<endl;
+	cout <<"Output Schema: " <<endl;
+    outputSchema->Print();
 	cout <<"Sum Function: " <<endl;
 		function->Print();
 	cout <<endl;
@@ -89,7 +93,8 @@ void GroupByNode::Print(){
 	cout <<"GroupBy Operation"<<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
 	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl<<outputSchema<<endl;
+	cout <<"Output Schema: " <<endl;
+    outputSchema->Print();
 	cout <<"Group By OrderMaker: " <<endl;
 	order->Print();
 	cout <<endl;
@@ -108,7 +113,8 @@ void DistinctNode::Print(){
 	cout <<"Duplicate Removal Operation"<<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
 	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl<<outputSchema<<endl;
+	cout <<"Output Schema: " <<endl;
+    outputSchema->Print();
 	cout <<"\n";
 	if(right)
 		right->Print();
@@ -120,7 +126,8 @@ void WriteOutNode::Print(){
 	cout <<"*****************"<<endl;
 	cout <<"Write Out"<<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
-	cout <<"Output Schema: " <<endl<<outputSchema<<endl;
+	cout <<"Output Schema: " <<endl;
+    outputSchema->Print();
 	cout <<"\n";
 	if(right)
 		right->Print();

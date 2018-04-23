@@ -116,7 +116,6 @@ clean:
 	rm -f *.out
 	rm -f y.tab.*
 	rm -f lex.yy.*
-	rm -f y.tab.*
 	rm -f yyfunc.tab.*
 	rm -f lex.yyfunc*
 

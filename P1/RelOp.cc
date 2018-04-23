@@ -391,7 +391,6 @@ void* Join::thread_work(void* args){
 					pageR.Append(rcdRight);
 					vecR.push_back(first);
 					int rPages = 0;
-
 					rMore = false;
 					while(arg->inPipe2->Remove(rcdRight)) {
 						Record *copyMe = new Record();
