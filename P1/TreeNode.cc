@@ -1,15 +1,15 @@
 #include "TreeNode.h"
 
 void SelectFNode::Print(){
-    if(left!=nullptr)
+    if(left)
         left->Print();
-	cout <<"*****************"<<endl;
-	cout <<"SelectFromFile Operation"<<endl;
-	cout <<"Input File:	"<<dbfilePath<<endl;
-	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl;
+	cout <<"*----Select Operation : File----*"<<endl;
+	cout <<endl;
+	cout <<"Input DB File:	"<<dbfilePath<<endl;
+	cout <<"Output Pipe:	"<<oPipe<<endl;
+	cout <<"Output Schema:	" <<endl;
     outputSchema->Print();
-	cout <<"Select CNF: " <<endl;
+	cout <<"Select CNF :	" <<endl;
 	cout <<"\t"; cnf->Print();
 	cout <<"\n\n";
 	if(right)
@@ -19,13 +19,13 @@ void SelectFNode::Print(){
 void SelectPNode::Print(){
 	if(left)
 		left->Print();
-	cout <<"*****************"<<endl;
-	cout <<"SelectFromPipe Operation"<<endl;
+	cout <<"*----Select Operation : Pipe----*"<<endl;
+	cout <<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
-	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl;
+	cout <<"Output Pipe:	"<<oPipe<<endl;
+	cout <<"Output Schema:	" <<endl;
     outputSchema->Print();
-	cout <<"Select CNF: " <<endl;
+	cout <<"Select CNF:	" <<endl;
 	cout <<"\t"; cnf->Print();
 	cout <<"\n\n";
 	if(right)
@@ -35,13 +35,13 @@ void SelectPNode::Print(){
 void ProjectNode::Print(){
 	if(left)
 		left->Print();
-	cout <<"*****************"<<endl;
-	cout <<"Project Operation"<<endl;
+	cout <<"*----Project Operation----*"<<endl;
+	cout <<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
-	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl;
+	cout <<"Output Pipe:	"<<oPipe<<endl;
+	cout <<"Output Schema:	" <<endl;
     outputSchema->Print();
-	cout <<"Attributes to keep: "<<endl;
+	cout <<"Attributes to keep:	"<<endl;
 	cout <<"\t";
 	for(int i=0;i<numAttsOutput;i++) {
 		cout <<keepMe[i] <<", ";
@@ -55,14 +55,14 @@ void ProjectNode::Print(){
 void JoinNode::Print(){
 	if(left)
 		left->Print();
-	cout <<"*****************"<<endl;
-	cout <<"Join Operation"<<endl;
-	cout <<"Left Input Pipe: "<<lPipe<<endl;
-	cout <<"Right Input Pipe: "<<rPipe<<endl;
-	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl;
+	cout <<"*----Join Operation----*"<<endl;
+	cout <<endl;
+	cout <<"Left Input Pipe:	"<<lPipe<<endl;
+	cout <<"Right Input Pipe:	"<<rPipe<<endl;
+	cout <<"Output Pipe:	"<<oPipe<<endl;
+	cout <<"Output Schema:	" <<endl;
     outputSchema->Print();
-	cout <<"Select CNF: " <<endl;
+	cout <<"Select CNF:	" <<endl;
 	cout <<"\t"; cnf->Print();
 	cout <<"\n\n";
 	if(right)
@@ -72,13 +72,13 @@ void JoinNode::Print(){
 void SumNode::Print(){
 	if(left)
 		left->Print();
-		cout <<"*****************"<<endl;
-	cout <<"Sum Operation"<<endl;
+	cout <<"*----Sum Operation----*"<<endl;
+	cout <<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
-	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl;
+	cout <<"Output Pipe:	"<<oPipe<<endl;
+	cout <<"Output Schema:	" <<endl;
     outputSchema->Print();
-	cout <<"Sum Function: " <<endl;
+	cout <<"Sum Function:	" <<endl;
 		function->Print();
 	cout <<endl;
 	cout <<"\n";
@@ -89,16 +89,16 @@ void SumNode::Print(){
 void GroupByNode::Print(){
 	if(left)
 		left->Print();
-	cout <<"*****************"<<endl;
-	cout <<"GroupBy Operation"<<endl;
+	cout <<"*----GroupBy Operation----*"<<endl;
+	cout <<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
-	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl;
+	cout <<"Output Pipe:	"<<oPipe<<endl;
+	cout <<"Output Schema:	" <<endl;
     outputSchema->Print();
-	cout <<"Group By OrderMaker: " <<endl;
+	cout <<"Group By OrderMaker:	" <<endl;
 	order->Print();
 	cout <<endl;
-	cout <<"Group By Function: " <<endl;
+	cout <<"Group By Function:	" <<endl;
 	function->Print();
 	cout <<endl;
 	cout <<"\n";
@@ -109,11 +109,11 @@ void GroupByNode::Print(){
 void DistinctNode::Print(){
 	if(left)
 		left->Print();
-	cout <<"*****************"<<endl;
-	cout <<"Duplicate Removal Operation"<<endl;
+	cout <<"*----Duplicate Removal Operation----*"<<endl;
+	cout <<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
-	cout <<"Output Pipe: "<<oPipe<<endl;
-	cout <<"Output Schema: " <<endl;
+	cout <<"Output Pipe:	"<<oPipe<<endl;
+	cout <<"Output Schema:	" <<endl;
     outputSchema->Print();
 	cout <<"\n";
 	if(right)
@@ -123,10 +123,10 @@ void DistinctNode::Print(){
 void WriteOutNode::Print(){
 	if(left)
 		left->Print();
-	cout <<"*****************"<<endl;
-	cout <<"Write Out"<<endl;
+	cout <<"*----Write Out----*"<<endl;
+	cout <<endl;
 	cout <<"Input Pipe:	"<<lPipe<<endl;
-	cout <<"Output Schema: " <<endl;
+	cout <<"Output Schema:	" <<endl;
     outputSchema->Print();
 	cout <<"\n";
 	if(right)

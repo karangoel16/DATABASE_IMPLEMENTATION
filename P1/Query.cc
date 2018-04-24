@@ -12,7 +12,7 @@ vector<AndList*> Query::OptimizeJoinOrder(vector<AndList*> joins) {
 		int joinNum = 2;
 		double smallest = 0.0;
 		string left_rel="", right_rel="";
-		AndList *chooseAndList=nullptr;
+		AndList *chooseAndList=NULL;
 		int choosePos = -1;
 		for(int j=0; j<joins.size(); j++ ){
 			string rel1, rel2;
@@ -49,8 +49,7 @@ void Query::JoinsAndSelects(vector<AndList*> &joins, vector<AndList*> &selects,
 			cerr <<"Error in cnf AndList"<<endl;
 			return;
 		}
-		if(aOrList->left->code == EQUALS && aOrList->left->left->code == NAME
-					&& aOrList->left->right->code == NAME){ //A.a = B.b
+		if(aOrList->left->code == EQUALS && aOrList->left->left->code == NAME && aOrList->left->right->code == NAME){ 
 			AndList *newAnd = new AndList();
 			newAnd->left= aOrList;
 			newAnd->rightAnd = NULL;
@@ -134,8 +133,9 @@ std::unordered_map<string, AndList *> Query::Selectors(std::vector<AndList *> li
         for(;mit!=mp.end();mit++){
             if(mit->first.compare(rel) == 0) {
                 AndList *lastAnd = mit->second;
-                while(lastAnd->rightAnd!=NULL)
+                while(lastAnd->rightAnd!=NULL){
                     lastAnd = lastAnd->rightAnd;
+					}
                 lastAnd->rightAnd = aAndList;
                 break;
             }
@@ -178,13 +178,13 @@ Query:: Query(struct FuncOperator *finalFunction,
  				std::map<string,Node *> selectNode;
  				list=tables;
  				while(list){
- 					Node *join=new SelectFNode();
- 					join->dbfilePath=dir+string(list->tableName);
- 					join->oPipe=pipeSelect++;
- 					join->outputSchema=new Schema(&catalog[0u],list->tableName);
+ 					Node *sel=new SelectFNode();
+ 					sel->dbfilePath=dir+string(list->tableName);
+ 					sel->oPipe=pipeSelect++;
+ 					sel->outputSchema=new Schema(&catalog[0u],list->tableName);
  					string relName(list->tableName);
  					if(list->aliasAs){
- 						join->outputSchema->AdjustSchemaWithAlias(list->aliasAs);
+ 						sel->outputSchema->AdjustSchemaWithAlias(list->aliasAs);
  						relName=string(list->aliasAs);
  					}
  					AndList *andList=nullptr;
@@ -194,9 +194,9 @@ Query:: Query(struct FuncOperator *finalFunction,
  							break;
  						}
  					}
-					join->cnf=new CNF();
- 					join->cnf->GrowFromParseTree(andList,join->outputSchema,*(join->literal));
- 					selectNode.emplace(relName,join);
+					sel->cnf=new CNF();
+ 					sel->cnf->GrowFromParseTree(andList,sel->outputSchema,*(sel->literal));
+ 					selectNode.emplace(relName,sel);
 					list=list->next;
 				}
 				
@@ -254,7 +254,6 @@ Query:: Query(struct FuncOperator *finalFunction,
 	
 				}
 
- 				//Select Above join TODO
  				Node *selAbvJoin=nullptr;
 				if(selAboveJoin.size() > 0 ) {
 					selAbvJoin = new SelectPNode();
@@ -396,7 +395,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 					ithAttr++;
 					name = name->next;
 				}
-				//TODO
+				
 				project->numAttsOutput = project->left->outputSchema->GetNumAtts();
 				project->numAttsOutput = outputNum;
 				project->lPipe = project->left->oPipe;

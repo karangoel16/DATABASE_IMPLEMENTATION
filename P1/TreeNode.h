@@ -12,10 +12,6 @@
 #include <vector>
 #include "ParseTree.h"
 
-enum QueryType{
-    SELECTF,SELECTP,SUM,DISTINCT,JOIN,PROJECT,GROUPBY,WRITEOUT
-};
-
 struct Node{
     Node *left=NULL,*right=NULL,*parent=NULL;
     CNF *cnf;
