@@ -3,10 +3,14 @@ using namespace std;
 
 bool Query::DropTable(string catalog,string dir,string name){
 	string temp=dir+name+".bin";
-	remove(&temp[0u]);
-	temp=dir+name+".meta";
-	remove(&temp[0u]);
+	if(remove(&temp[0u]))
+		return false;
+	temp=dir+name+".bin.meta";
+	if(remove(&temp[0u]))
+		return false;
+	return true;
 }
+
 static void *Ex(void *pr){
 	Node *root=(Node *)pr;
 	root->Execute();
@@ -455,7 +459,7 @@ void Query::ExecuteQuery(){
 }
 
 
-bool Query::createTable(string catalog_path,string dir,CreateTable *create){
+bool Query::CreateQuery(string catalog_path,string dir,CreateTable *create){
 	DBFile *db = new DBFile;
 	string temp=dir+string(create->tableName)+".bin";
 	OrderMaker *om = new OrderMaker;
@@ -477,12 +481,26 @@ bool Query::createTable(string catalog_path,string dir,CreateTable *create){
 			}
 			sortAtt = sortAtt->next;
 		}
-		struct { OrderMaker* o; int l; } * pOrder;
+		struct test { OrderMaker *o; 
+		int l;};
+		test * pOrder=new test();
 		pOrder->o=om;
 		pOrder->l=RUNLEN;
 		db->Create(&temp[0u], sorted, (void*)pOrder);
 	} else
 		db->Create(&temp[0u], heap, NULL );
 	db->Close();
+	return 1;
+}
+
+bool Query::InsertQuery(string catalog_path,string dir,string tpch_dir,InsertFile *insert){
+	DBFile *dbfile=new DBFile();
+	string dbpath=dir+insert->tableName+".bin";
+	dbfile->Open(&dbpath[0u]);
+	string fpath=tpch_dir+insert->fileName+".tbl";
+	cout <<"loading " <<fpath<<endl;
+	Schema schema(&catalog_path[0u], insert->tableName);
+	dbfile->Load(schema, &fpath[0u]);
+	dbfile->Close();
 	return 1;
 }

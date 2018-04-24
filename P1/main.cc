@@ -10,8 +10,18 @@ using namespace std;
 extern "C" {
 	int yyparse(void);   // defined in y.tab.c
 	int yyfuncparse(void);   // defined in yyfunc.tab.c
+	int yylex(void);
+	int yywrap();
+	void init_lexical_parser (char *src);
+	void close_lexical_parser ();
+	void yylex_destroy();
 }
 
+
+extern struct CreateTable *createTable;
+extern struct InsertFile *insertFile;
+extern char *dropTableName;
+extern char *setOutPut;
 extern	FuncOperator *finalFunction;
 extern struct TableList *tables; 
 extern struct AndList *boolean;
@@ -21,21 +31,33 @@ extern int distinctAtts;
 extern int distinctFunc;
 extern int quit;
 extern char *dropTableName;
+extern char type;
 int main () {
 	setup();
 	while(1){
 		std::cout<<"***************************************************\n";
 		std::cout<<"Type the following commands"<<endl;
 		std::cout<<"CREATE TABLE"<<endl;
+		std::cout<<"INSERT 'csv file'INTO 'collections' "<<endl;
 		std::cout<<"SELECT to query the database"<<endl;
 		std::cout<<"DROP TABLE (tablename)"<<endl;
 		std::cout<<"QUIT THE DATABASE"<<endl;
 		std::cout<<"***************************************************\n";
 		yyparse();
-		if(quit){
-			break;
+		if(quit)
+			return 1;
+		if(type=='c'){
+			Query *q=new Query();
+			if(q->CreateQuery(catalog_path,dbfile_dir,createTable)) {
+				cout <<"Created table"<<createTable->tableName<<endl;
 		}
-		else if(dropTableName){
+		}else if(type=='i') {
+			Query *q=new Query();
+			std::cout<<insertFile->tableName<<"\n";
+			if(q->InsertQuery(catalog_path,dbfile_dir,tpch_dir,insertFile))
+				cout <<"Loaded file "<<insertFile->fileName<<" into " <<insertFile->tableName<<endl;
+		}
+		else if(type=='d'){
 			Query *q=new Query();
 			if(q->DropTable(catalog_path,dbfile_dir,dropTableName)){
 				std::cout<<"We have deleted the table "<<dropTableName<<" successfully"<<endl;

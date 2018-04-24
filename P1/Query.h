@@ -47,7 +47,8 @@ class Query{
     void ExecuteQuery();
     void PrintQuery();
     bool DropTable(string catalog_path,string dir,string name);
-    bool createTable(string catalog_path,string dir,CreateTable *create);
+    bool CreateQuery(string catalog_path,string dir,CreateTable *create);
+    bool InsertQuery(string catalog_path,string dir,string tpch_dir,InsertFile *insert);
 };
 
 #endif

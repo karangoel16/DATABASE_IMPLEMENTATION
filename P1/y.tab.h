@@ -110,7 +110,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 38 "Parser.y" /* yacc.c:1909  */
+#line 39 "Parser.y" /* yacc.c:1909  */
 
 	struct CreateTable *myCreateTable;
   	struct AttrList *myAttrList;

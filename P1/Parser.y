@@ -32,6 +32,7 @@
 	int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query 
 	int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
 	int quit;    //1 to quit
+	char type;
 %}
 
 // this stores all of the types returned by production rules
@@ -117,18 +118,22 @@
 SQL: Create
 { 
 	createTable = $1;
+	type='c';
 }
 | Insert 
 {	
  	insertFile = $1;
+	type='i';
 }
 | Drop 
 {
 	dropTableName = $1;
+	type='d';
 }
 | Set 
 {
 	setOutPut = $1;
+	type='s';
 }
 | QUIT ';'
 {	
@@ -507,3 +512,5 @@ Float
 ;
 
 %%
+
+
