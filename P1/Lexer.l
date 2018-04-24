@@ -15,7 +15,6 @@
 
 int lineno = 1;
 void yyerror(char*s);
-
 static YY_BUFFER_STATE yylex_buf_state;
 void init_lexical_parser (char *src) { yylex_buf_state = yy_scan_string (src); }
 void close_lexical_parser () { yy_delete_buffer (yylex_buf_state); }
@@ -39,6 +38,32 @@ void close_lexical_parser () { yy_delete_buffer (yylex_buf_state); }
 
 %%
 
+"CREATE"		return (CREATE);
+
+"TABLE"			return (TABLE);
+
+"INTEGER"		return (TKINTEGER);
+
+"DOUBLE" 		return (TKDOUBLE);
+
+"STRING"		return (TKSTRING);
+
+"HEAP"			return (TKHEAP);
+
+"SORTED"		return (TKSORTED);
+
+"ON"			return (ON);
+
+"INSERT"		return (INSERT);
+
+"INTO"			return (INTO);
+
+"DROP"			return (DROP);
+
+"SET"			return (SET);
+
+"OUTPUT"		return (OUTPUT);
+
 "SELECT"		return(SELECT);
 
 "FROM"			return(FROM);
@@ -58,6 +83,9 @@ void close_lexical_parser () { yy_delete_buffer (yylex_buf_state); }
 "OR"			return(OR);
 
 "AS"			return(AS);
+
+"QUIT"			return(QUIT);
+"quit"			return(QUIT);
 
 "("			return('(');
 
@@ -89,7 +117,7 @@ void close_lexical_parser () { yy_delete_buffer (yylex_buf_state); }
   			return(Float);
 			}
 
-[A-Za-z][\.A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
+[A-Za-z][A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
   			return(Name);
 			}     
 
@@ -122,5 +150,4 @@ void yyerror(char *s) {
 int yywrap(void){
   return 1;
 }
-
 

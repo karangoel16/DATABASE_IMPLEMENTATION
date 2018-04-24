@@ -145,35 +145,109 @@ void Node::Execute(){
 	NEED_TO_IMPLEMENT
 }
 void SelectFNode::Execute(){
-	NEED_TO_IMPLEMENT
+	if(left!=NULL)
+		left->Execute();
+	if(right!=NULL)
+		right->Execute();
+	Pipe *sfOutPipe = new Pipe(PIPE_SIZE);
+		//add it to the pipe
+	SelectFile *sf=new SelectFile();
+	pipe[oPipe] = sfOutPipe;
+	DBFile *db=new DBFile();
+	db->Open((char*)dbfilePath.c_str());
+	db->MoveFirst();
+	literal=new Record();
+	sf->Run(*db, *sfOutPipe, *(cnf), *(literal));
+	operators.push_back(sf);
 }
 
 void SelectPNode::Execute(){
-	NEED_TO_IMPLEMENT
+	if(left)
+		left->Execute();
+	if(right)
+		right->Execute();
+	SelectPipe *selectPipe = new SelectPipe();
+	selectPipe->Use_n_Pages(RUNLEN);
+	Pipe *spo = new Pipe(PIPE_SIZE);
+	//add it to the pipe
+	pipe[oPipe] = new Pipe(PIPE_SIZE);
+	Pipe *spl = pipe[lPipe];
+	selectPipe->Run(*spl, *spo, *(cnf), *(literal));
 }
 
 void ProjectNode::Execute(){
-	NEED_TO_IMPLEMENT
+	if(left)
+		left->Execute();
+	if(right)
+		right->Execute();
+	Project *project = new Project();
+	Pipe *pOutPipe = new Pipe(PIPE_SIZE);
+	//add it to the pipe
+	pipe[oPipe] = pOutPipe;
+	Pipe *plPipe = pipe[lPipe];
+	project->Run(*plPipe, *pOutPipe, keepMe, numAttsInput, numAttsOutput);
+	operators.push_back(project);
 }
 
 void JoinNode::Execute(){
-	NEED_TO_IMPLEMENT
+	if(left)
+		left->Execute();
+	if(right)
+		right->Execute();
+	Join *join = new Join;
+	Pipe *jOutPipe = new Pipe(PIPE_SIZE);
+	//add it to the pipe
+	pipe[oPipe] = jOutPipe;
+	Pipe *jlPipe = pipe[lPipe];
+	Pipe *jrPipe = pipe[rPipe];
+	join->Run(*jlPipe, *jrPipe, *jOutPipe, *(cnf), *(literal));
 }
 
 void SumNode::Execute(){
-	NEED_TO_IMPLEMENT
+	if(left)
+		left->Execute();
+	if(right)
+		right->Execute();
+	Sum *sum = new Sum;
+	Pipe *sOutPipe = new Pipe(PIPE_SIZE);
+	pipe[oPipe] = sOutPipe;
+	Pipe *slPipe = pipe[lPipe];
+	sum->Run(*slPipe, *sOutPipe, *(function));
 }
 
 void GroupByNode::Execute(){
-	NEED_TO_IMPLEMENT
+	if(left)
+		left->Execute();
+	if(right)
+		right->Execute();
+	GroupBy *groupBy = new GroupBy;
+//		groupBy->Use_n_Pages(RUNLEN);
+	Pipe *gbOutPipe = new Pipe(PIPE_SIZE);
+	pipe[oPipe] = gbOutPipe;
+	Pipe *gblPipe = pipe[lPipe];
+	groupBy->Run(*gblPipe, *gbOutPipe, *(order), *(function));
 }
 
 void DistinctNode::Execute(){
-	NEED_TO_IMPLEMENT
+	if(left)
+		left->Execute();
+	if(right)
+		right->Execute();
+	DuplicateRemoval *dr = new DuplicateRemoval;
+//		dr->Use_n_Pages(RUNLEN);
+	Pipe *drOutPipe = new Pipe(PIPE_SIZE);
+	pipe[oPipe] = drOutPipe;
+	Pipe *drlPipe = pipe[lPipe];
+	dr->Run(*drlPipe, *drOutPipe, *(left->outputSchema));
 }
 
 void WriteOutNode::Execute(){
-	NEED_TO_IMPLEMENT
+	WriteOut *wo = new WriteOut;
+//		wo->Use_n_Pages(RUNLEN);
+	Pipe *wlPipe = pipe[lPipe];
+	wo->Run(*wlPipe, nullptr, *(outputSchema));
+//		cout <<"total pipe size: " <<this->pipes.size()<<endl;
+	operators.push_back(wo);
 }
 
 

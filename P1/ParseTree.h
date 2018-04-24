@@ -11,6 +11,34 @@
 #define GREATER_THAN 6
 #define EQUALS 7
 
+#define HEAP 100
+#define SORTED 101
+
+//used for create table
+struct CreateTable {
+	char *tableName;
+	int type;
+	struct AttrList *attrList;
+	struct NameList *sortAttrList;
+};
+
+struct AttrList {
+	struct Attr *attr;
+	struct AttrList *next;
+};
+
+struct Attr {
+	char *attrName;
+	int type;
+};
+
+// used for insert file into table
+struct InsertFile {
+	char *fileName;
+	char *tableName;
+};
+
+
 // used in computational (funcional) expressions
 struct FuncOperand {
 

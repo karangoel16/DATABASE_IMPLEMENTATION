@@ -12,14 +12,20 @@
 #include <vector>
 #include "ParseTree.h"
 
+static std::unordered_map<int,Pipe *> pipe;
+static int dbNum=0;
+static std::unordered_map<int,DBFile *> dbs;
+static std::vector<RelationalOp *> operators;
+
 struct Node{
     Node *left=NULL,*right=NULL,*parent=NULL;
     CNF *cnf;
 	Record *literal;
 	Schema *outputSchema;
+    RelationalOp *op;
 	Function *function;
     OrderMaker *order;
-    int lPipe,rPipe,oPipe,numAttsOutput;
+    int lPipe,rPipe,oPipe,numAttsOutput,numAttsInput;
     int *keepMe;
     DBFile *db;
     Pipe *outPipe;

@@ -1,6 +1,16 @@
 #include "Query.h"
 using namespace std;
 
+bool Query::DropTable(string catalog,string dir,string name){
+	string temp=dir+name+".bin";
+	remove(&temp[0u]);
+	temp=dir+name+".meta";
+	remove(&temp[0u]);
+}
+static void *Ex(void *pr){
+	Node *root=(Node *)pr;
+	root->Execute();
+}
 vector<AndList*> Query::OptimizeJoinOrder(vector<AndList*> joins) {
 	if(joins.size() <=1 ) {
 		return joins;
@@ -174,12 +184,13 @@ Query:: Query(struct FuncOperator *finalFunction,
                 }
                 root=new Node();
 				vector<AndList *> orderJoin(std::move(OptimizeJoinOrder(joins)));
+
 // 				//Building the select Node
  				std::map<string,Node *> selectNode;
  				list=tables;
  				while(list){
  					Node *sel=new SelectFNode();
- 					sel->dbfilePath=dir+string(list->tableName);
+ 					sel->dbfilePath=dir+string(list->tableName)+".bin";
  					sel->oPipe=pipeSelect++;
  					sel->outputSchema=new Schema(&catalog[0u],list->tableName);
  					string relName(list->tableName);
@@ -396,7 +407,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 					name = name->next;
 				}
 				
-				project->numAttsOutput = project->left->outputSchema->GetNumAtts();
+				project->numAttsInput = project->left->outputSchema->GetNumAtts();
 				project->numAttsOutput = outputNum;
 				project->lPipe = project->left->oPipe;
 				project->oPipe = pipeSelect++;
@@ -430,5 +441,48 @@ void Query::ExecuteQuery(){
 		std::cout<<"The tree is null\n";
 		return ;
 	}
-	root->Execute();
+	//pthread_t thread1;
+	//pthread_create (&thread1, NULL, Ex, (void *)&root);
+	WriteOutNode *wr=new WriteOutNode();
+	wr->left = root;
+	wr->lPipe = wr->left->oPipe;
+	wr->outputSchema = wr->left->outputSchema;
+	wr->Execute();
+	for(vector<RelationalOp *>::iterator roIt=operators.begin(); roIt!=operators.end();roIt++){
+		RelationalOp *op = *roIt;
+		op->WaitUntilDone();
+	}
+}
+
+
+bool Query::createTable(string catalog_path,string dir,CreateTable *create){
+	DBFile *db = new DBFile;
+	string temp=dir+string(create->tableName)+".bin";
+	OrderMaker *om = new OrderMaker;
+	if(create->type == SORTED) {
+		NameList *sortAtt = create->sortAttrList;
+		while(sortAtt) {
+			AttrList *atts = create->attrList;
+			int i=0;
+			while(atts) {
+				if(strcmp(sortAtt->name, atts->attr->attrName)){
+					//got it
+					om->whichAtts[om->numAtts] = i;
+					om->whichTypes[om->numAtts] = (Type) atts->attr->type;
+					om->numAtts++;
+					break;
+				}
+				i++;
+				atts = atts->next;
+			}
+			sortAtt = sortAtt->next;
+		}
+		struct { OrderMaker* o; int l; } * pOrder;
+		pOrder->o=om;
+		pOrder->l=RUNLEN;
+		db->Create(&temp[0u], sorted, (void*)pOrder);
+	} else
+		db->Create(&temp[0u], heap, NULL );
+	db->Close();
+	return 1;
 }

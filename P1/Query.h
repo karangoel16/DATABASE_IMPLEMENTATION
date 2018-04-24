@@ -13,10 +13,10 @@
 #include "ParseTree.h"
 #include "TreeNode.h"
 #include <map>
-
+#include <cstring>
 struct Node;
 
-
+extern std::vector<RelationalOp *>operators;
 
 
 class Query{
@@ -30,7 +30,6 @@ class Query{
 	int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
     Statistics *s;
     int pipeSelect=0;
-    std::unordered_map<int,Pipe *> pipe;
     std::unordered_map<string, AndList *> Selectors(std::vector<AndList *> list);
     void JoinsAndSelects(std::vector<AndList*> &joins, std::vector<AndList*> &selects,std::vector<AndList*> &selAboveJoin); 
     Function *GenerateFunc(Schema *schema);
@@ -38,6 +37,7 @@ class Query{
     map<string, AndList*>OptimizeSelectAndApply(vector<AndList*> selects);
     vector<AndList*> OptimizeJoinOrder(vector<AndList*> joins);
     public:
+    Query(){};
     Query(struct FuncOperator *finalFunction,
 			struct TableList *tables,
 			struct AndList * boolean,
@@ -46,7 +46,8 @@ class Query{
 	        int distinct_atts, int distinct_func, Statistics *s,string dir,string tpch,string catalog);
     void ExecuteQuery();
     void PrintQuery();
-
+    bool DropTable(string catalog_path,string dir,string name);
+    bool createTable(string catalog_path,string dir,CreateTable *create);
 };
 
 #endif

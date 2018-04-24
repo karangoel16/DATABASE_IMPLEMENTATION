@@ -49,16 +49,30 @@ extern int yydebug;
     Float = 259,
     Int = 260,
     String = 261,
-    SELECT = 262,
-    GROUP = 263,
-    DISTINCT = 264,
-    BY = 265,
-    FROM = 266,
-    WHERE = 267,
-    SUM = 268,
-    AS = 269,
-    AND = 270,
-    OR = 271
+    CREATE = 262,
+    TABLE = 263,
+    TKHEAP = 264,
+    TKSORTED = 265,
+    ON = 266,
+    TKINTEGER = 267,
+    TKDOUBLE = 268,
+    TKSTRING = 269,
+    INSERT = 270,
+    INTO = 271,
+    DROP = 272,
+    SET = 273,
+    OUTPUT = 274,
+    QUIT = 275,
+    SELECT = 276,
+    GROUP = 277,
+    DISTINCT = 278,
+    BY = 279,
+    FROM = 280,
+    WHERE = 281,
+    SUM = 282,
+    AS = 283,
+    AND = 284,
+    OR = 285
   };
 #endif
 /* Tokens.  */
@@ -66,24 +80,43 @@ extern int yydebug;
 #define Float 259
 #define Int 260
 #define String 261
-#define SELECT 262
-#define GROUP 263
-#define DISTINCT 264
-#define BY 265
-#define FROM 266
-#define WHERE 267
-#define SUM 268
-#define AS 269
-#define AND 270
-#define OR 271
+#define CREATE 262
+#define TABLE 263
+#define TKHEAP 264
+#define TKSORTED 265
+#define ON 266
+#define TKINTEGER 267
+#define TKDOUBLE 268
+#define TKSTRING 269
+#define INSERT 270
+#define INTO 271
+#define DROP 272
+#define SET 273
+#define OUTPUT 274
+#define QUIT 275
+#define SELECT 276
+#define GROUP 277
+#define DISTINCT 278
+#define BY 279
+#define FROM 280
+#define WHERE 281
+#define SUM 282
+#define AS 283
+#define AND 284
+#define OR 285
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 28 "Parser.y" /* yacc.c:1909  */
+#line 38 "Parser.y" /* yacc.c:1909  */
 
+	struct CreateTable *myCreateTable;
+  	struct AttrList *myAttrList;
+  	struct InsertFile *myInsertFile;
+	struct Attr *myAttr;
+	
  	struct FuncOperand *myOperand;
 	struct FuncOperator *myOperator; 
 	struct TableList *myTables;
@@ -95,7 +128,7 @@ union YYSTYPE
 	char *actualChars;
 	char whichOne;
 
-#line 99 "y.tab.h" /* yacc.c:1909  */
+#line 132 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
