@@ -1,6 +1,18 @@
 #include "Query.h"
 using namespace std;
 
+int clear_pipe (Pipe &in_pipe, Schema *schema, bool print) {
+	Record rec;
+	int cnt = 0;
+	while (in_pipe.Remove (&rec)) {
+		if (print) {
+			rec.Print (schema);
+		}
+		cnt++;
+	}
+	return cnt;
+}
+
 bool Query::DropTable(string catalog,string dir,string name){
 	string temp=dir+name+".bin";
 	if(remove(&temp[0u]))
@@ -117,7 +129,7 @@ void Query::JoinsAndSelects(vector<AndList*> &joins, vector<AndList*> &selects,
 
 Function *Query::GenerateFunc(Schema *schema) {
 	Function *func = new Function();
-	func->GrowFromParseTree(this->finalFunction, *schema);
+	func->GrowFromParseTree(finalFunction, *schema);
 	return func;
 }
 
@@ -134,8 +146,8 @@ OrderMaker *Query::GenerateOM(Schema *schema) {
 	return order;
 }
 
-std::unordered_map<string, AndList *> Query::Selectors(std::vector<AndList *> lists){
-    unordered_map<string,AndList *> mp;
+std::map<string, AndList *> Query::Selectors(std::vector<AndList *> lists){
+    map<string,AndList *> mp;
     for(auto list:lists){
         AndList *aAndList = list;
 		Operand *op = aAndList->left->left->left;
@@ -171,7 +183,7 @@ Query:: Query(struct FuncOperator *finalFunction,
             cnfAndList(boolean),
             groupAtts(pGrpAtts),
             selectAtts(pAttsToSelect),
-            distinctAtts(distinctAtts),
+            distinctAtts(distinct_atts),
             distinctFunc(distinct_func),
             s(s)
             {
@@ -179,7 +191,7 @@ Query:: Query(struct FuncOperator *finalFunction,
  				//Need to implement to work joins
  				std::vector<AndList*> joins, selectors, selAboveJoin;
 				JoinsAndSelects(joins,selectors,selAboveJoin);
-                std::unordered_map<string,AndList *> select(std::move(Selectors(selectors)));
+                std::map<string,AndList *> select=Selectors(selectors);
 				while(list){
 					if(list->aliasAs){
 						s->CopyRel(list->tableName,list->aliasAs);
@@ -204,7 +216,7 @@ Query:: Query(struct FuncOperator *finalFunction,
  					}
  					AndList *andList=nullptr;
  					for(auto it:select){
- 						if(!relName.compare(it.first)){
+ 						if(relName.compare(it.first)==0){
  							andList=it.second;
  							break;
  						}
@@ -232,6 +244,8 @@ Query:: Query(struct FuncOperator *finalFunction,
 					if(!leftUpMost && !rightUpMost){
 						join->left=selectNode[leftRel];
 						join->right=selectNode[rightRel];
+						//selectNode[leftRel]->parent=join;
+						//selectNode[rightRel]->parent=join;
 						join->outputSchema=new Schema(join->left->outputSchema,join->right->outputSchema);//need to deal with it
 					}
 					else if(leftUpMost){
@@ -240,6 +254,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 						join->left = leftUpMost; 
 						leftUpMost->parent = join;
 						join->right = selectNode[rightRel];
+						//selectNode[rightRel]=join;
 					}
 					else if(rightUpMost) { //!A and B
 						while(rightUpMost->parent)
@@ -247,6 +262,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 						join->left = rightUpMost;
 						rightUpMost->parent = join;
 						join->right = selectNode[leftRel];
+						//selectNode[leftRel]=join;
 					} 
 					else { // A and B
 						while(leftUpMost->parent )
@@ -266,9 +282,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 					join->oPipe = pipeSelect++;	
 					join->cnf=new CNF();
 					join->cnf->GrowFromParseTree(inner, join->left->outputSchema, join->right->outputSchema, *(join->literal));
-	
 				}
-
  				Node *selAbvJoin=nullptr;
 				if(selAboveJoin.size() > 0 ) {
 					selAbvJoin = new SelectPNode();
@@ -286,6 +300,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 							andList->rightAnd = *it;
 						}
 					}
+					selAbvJoin->cnf=new CNF();
 					selAbvJoin->cnf->GrowFromParseTree(andList, selAbvJoin->outputSchema, *(selAbvJoin->literal));
 				}
 
@@ -306,12 +321,9 @@ Query:: Query(struct FuncOperator *finalFunction,
 					groupBy->oPipe=pipeSelect++;
 					groupBy->function=GenerateFunc(groupBy->left->outputSchema);
 					groupBy->order=GenerateOM(groupBy->left->outputSchema);
-					Attribute DA = {"double", Double};
-					Attribute attr;
-					attr.name = (char *)"sum";
-					attr.myType = Double;
+					Attribute DA = {"sum", Double};
 					NameList *attName = groupAtts;
-					Schema *schema = new Schema ((char *)"dummy", 1, &attr);
+					Schema *schema = new Schema ((char *)"dummy", 1, &DA);
 					int numGroupAttr=0;
 					while(attName){
 						numGroupAttr++;
@@ -324,7 +336,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 						int i = 0;
 						attName = groupAtts;
 						while(attName) {
-							attrs[i].name = &string(attName->name)[0u];
+							attrs[i].name = strdup(attName->name);
 							attrs[i++].myType = groupBy->left->outputSchema->FindType(attName->name);
 							attName = attName->next;
 						}
@@ -332,26 +344,28 @@ Query:: Query(struct FuncOperator *finalFunction,
 						groupBy->outputSchema = new Schema(schema, outSchema);
 					}
 				}
-
+				
 // 				//Sum function building from here
 
-				Node *sum=nullptr;
-				if(!groupBy && finalFunction){
-					sum=new SumNode();
-					if(selAbvJoin)
-						sum->left=selAbvJoin;
-					else if(join)
-						sum->left=join;
-					else
-						sum->left=selectNode.begin()->second;
-					sum->left->lPipe=sum->left->oPipe;
-					sum->oPipe=pipeSelect++;
-					sum->function=GenerateFunc(sum->left->outputSchema);
-					Attribute attr;
-					attr.name="sum";
-					attr.myType=Double;
-					sum->outputSchema=new Schema((char *)"Dummy",1,&attr);
-				}
+			Node *sum = NULL;
+			if(groupBy == NULL && this->finalFunction!=NULL) {
+		//		cout <<"Sum Building"<<endl;
+				sum = new SumNode();
+				if(selAbvJoin)
+					sum->left = selAbvJoin;
+				else if(join)
+					sum->left = join;
+				else
+					sum->left = selectNode.begin()->second;
+				sum->lPipe= sum->left->oPipe;
+				sum->oPipe = pipeSelect++;
+				sum->function = this->GenerateFunc(sum->left->outputSchema);
+				Attribute *attr = new Attribute[1];
+				attr[0].name = (char *)"sum";
+				attr[0].myType = Double;
+				sum->outputSchema = new Schema ((char *)"dummy", 1, attr);
+			}
+
 
 
 // 				//Project TODO
@@ -439,6 +453,17 @@ void Query::PrintQuery(){
     root->Print();
 }
 
+// int clear_pipe (Pipe &in_pipe, Schema *schema, bool print) {
+// 	Record rec;
+// 	int cnt = 0;
+// 	while (in_pipe.Remove (&rec)) {
+// 		if (print) {
+// 			rec.Print (schema);
+// 		}
+// 		cnt++;
+// 	}
+// 	return cnt;
+// }
 
 void Query::ExecuteQuery(){
 	if(root==nullptr){
@@ -447,15 +472,14 @@ void Query::ExecuteQuery(){
 	}
 	//pthread_t thread1;
 	//pthread_create (&thread1, NULL, Ex, (void *)&root);
+	//clear_pipe(*(root->outPipe),root->outputSchema,true);
+	//root->wait();
 	WriteOutNode *wr=new WriteOutNode();
 	wr->left = root;
 	wr->lPipe = wr->left->oPipe;
 	wr->outputSchema = wr->left->outputSchema;
+	wr->Print();
 	wr->Execute();
-	for(vector<RelationalOp *>::iterator roIt=operators.begin(); roIt!=operators.end();roIt++){
-		RelationalOp *op = *roIt;
-		op->WaitUntilDone();
-	}
 }
 
 
@@ -470,7 +494,6 @@ bool Query::CreateQuery(string catalog_path,string dir,CreateTable *create){
 			int i=0;
 			while(atts) {
 				if(strcmp(sortAtt->name, atts->attr->attrName)){
-					//got it
 					om->whichAtts[om->numAtts] = i;
 					om->whichTypes[om->numAtts] = (Type) atts->attr->type;
 					om->numAtts++;

@@ -1,4 +1,4 @@
-CC = g++ -std=c++11 -O2 -w
+CC = g++ -std=c++14 -O2 -Wno-deprecated
 
 tag = -i
 
@@ -22,7 +22,7 @@ a22.out: Record.o BigQ.o SortedFile.o Statistics.o Comparison.o VirtualDBFile.o 
 	$(CC) -D F_DEBUG -o a22.out BigQ.o Pipe.o Statistics.o VirtualDBFile.o HeapFile.o SortedFile.o Record.o Comparison.o ComparisonEngine.o Function.o  Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o MetaStruct.o a22.o -lfl -lpthread
 
 main.out: TreeNode.o Record.o Query.o Comparison.o Statistics.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o main.o
-	$(CC) -o main.out TreeNode.o Query.o Record.o Statistics.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o Pipe.o BigQ.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o RelOp.o main.o -lfl -lpthread
+	$(CC) -D F_DEBUG -o main.out TreeNode.o Query.o Record.o Statistics.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o VirtualDBFile.o SortedFile.o MetaStruct.o HeapFile.o Pipe.o BigQ.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o RelOp.o main.o -lfl -lpthread
 
 MetaStruct.o: MetaStruct.cc
 	$(CC) -g -c MetaStruct.cc

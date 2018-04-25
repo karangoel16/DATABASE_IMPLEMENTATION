@@ -16,10 +16,10 @@
 #include <cstring>
 struct Node;
 
-extern std::vector<RelationalOp *>operators;
 
 
 class Query{
+    std::vector<RelationalOp *> operators;
     Node *root;//this is the main Node to be used later 
     struct FuncOperator * finalFunction; //function in aggregation
 	struct TableList * tables;   // Tables in FROM CLAUSE
@@ -30,7 +30,7 @@ class Query{
 	int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
     Statistics *s;
     int pipeSelect=0;
-    std::unordered_map<string, AndList *> Selectors(std::vector<AndList *> list);
+    std::map<string, AndList *> Selectors(std::vector<AndList *> list);
     void JoinsAndSelects(std::vector<AndList*> &joins, std::vector<AndList*> &selects,std::vector<AndList*> &selAboveJoin); 
     Function *GenerateFunc(Schema *schema);
     OrderMaker *GenerateOM(Schema *schema);

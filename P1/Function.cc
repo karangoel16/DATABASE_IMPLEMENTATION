@@ -41,7 +41,7 @@ Type Function :: RecursivelyBuild (struct FuncOperator *parseTree, Schema &mySch
 			// first, make sure that the attribute is there
 			int myNum = mySchema.Find (parseTree->leftOperand->value);
 			if (myNum == -1) {
-				cerr << "Error!  Attribute in arithmatic expression was not found.\n";
+				cerr << "Error!  Attribute "<<parseTree->leftOperand->value<<" in arithmatic expression was not found.\n";
 				exit (1);
 			}
 
@@ -201,7 +201,32 @@ void Function :: GrowFromParseTree (struct FuncOperator *parseTree, Schema &mySc
 }
 
 void Function :: Print () {
-
+	for(int i=0; i<numOps; i++) {
+		switch (opList[i].myOp) {
+		case PushInt:
+			cout <<" "<<"PushInt";
+			break;
+		case PushDouble:
+			cout <<" "<<"PushDouble";
+			break;
+		case DblMultiply:
+			cout <<" "<<"DoubleMultiply";
+			break;
+		case IntMinus:
+			cout <<" "<<"IntMinus";
+			break;
+		case DblMinus:
+			cout <<" "<<"DoubleMinus";
+			break;
+		case ToDouble2Down:
+			cout <<" "<<"ToDouble2Down";
+			break;
+		default:
+			cout <<" "<<opList[i].myOp;
+			break;
+		}
+	}
+	cout <<endl;
 }
 
 Type Function :: Apply (Record &toMe, int &intResult, double &doubleResult) {

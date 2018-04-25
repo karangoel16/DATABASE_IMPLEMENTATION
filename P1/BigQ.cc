@@ -22,7 +22,7 @@ void * BigQ::result(void *Big){
 		return comp.Compare(p,q,&o1)<0?true:false;
 	};
 
-	auto comp1 = [&](pair<int,Record *>p,pair<int,Record *>q){
+	auto comp1 = [&](pair<long,Record *>p,pair<long,Record *>q){
 		ComparisonEngine comp;
 		return comp.Compare(p.second,q.second,&o2)<0?false:true;
 	};
@@ -101,8 +101,8 @@ void * BigQ::result(void *Big){
 	}
 	pageCounter.push_back(numPages);
 	vector<Page *> pageKeeper;
-	priority_queue<pair<int, Record*>, vector<pair<int, Record*>>,decltype( comp1 ) > pq(comp1);
-	for(int i=0;i<pageCounter.size()-1;i++ ){
+	priority_queue<pair<long, Record*>, vector<pair<long, Record*>>,decltype( comp1 ) > pq(comp1);
+	for(long i=0;i<pageCounter.size()-1;i++ ){
 		Page *temp_P = new Page();
 		bigQ->file.GetPage(temp_P,pageCounter[i]);
 		Record *temp_R = new Record();
@@ -113,7 +113,7 @@ void * BigQ::result(void *Big){
 	vector<int> pageChecker(pageCounter);
 	while(!pq.empty()){
 		auto top=pq.top();
-		bigQ->Pout.Insert(top.second);
+		bigQ->Pout.Insert(std::move(top.second));
 		pq.pop();
 		Record *temp_R=new Record();
 		if(!pageKeeper[top.first]->GetFirst(temp_R)){

@@ -11,6 +11,7 @@
 #include <sstream>
 #include "Defs.h"
 #include <vector>
+#include <thread>
 
 using namespace std;
 class RelationalOp {
@@ -20,54 +21,60 @@ class RelationalOp {
 	// blocks the caller until the particular relational operator 
 	// has run to completion
 	void WaitUntilDone (){
-		pthread_join(worker,NULL);
 	}
 
 	// tell us how much internal memory the operation can use
 	void Use_n_Pages (int n) {
 		page=n;
 	}
-	pthread_t worker;
 
 };
 
 class SelectFile : public RelationalOp { 
+	pthread_t worker;
 	static void* thread_work(void* arg);
 	public:
 	void Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal);
 };
 
 class SelectPipe : public RelationalOp {
+	pthread_t worker;
 	static void* thread_work(void* arg);
 	public:
 	void Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal);
 };
 class Project : public RelationalOp { 
+	pthread_t worker;
 	static void* thread_work(void* arg);
 	public:
 	void Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput);
 };
 class Join : public RelationalOp { 
+	pthread_t worker;
 	static void* thread_work(void* arg);
 	public:
 	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal);
 };
 class DuplicateRemoval : public RelationalOp {
+	pthread_t worker;
 	static void* thread_work(void* arg);
 	public:
 	void Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema);
 };
 class Sum : public RelationalOp {
+	pthread_t worker;
 	static void* thread_work(void* arg);
 	public:
 	void Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe);
 };
 class GroupBy : public RelationalOp {
+	pthread_t worker;
 	static void* thread_work(void* arg);
 	public:
 	void Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe);
 };
 class WriteOut : public RelationalOp {
+	pthread_t worker;
 	static void* thread_work(void* arg);
 	public:
 	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema);

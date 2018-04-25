@@ -11,12 +11,12 @@
 #include "DBFile.h"
 #include <vector>
 #include "ParseTree.h"
+#include <mutex>
 
 static std::unordered_map<int,Pipe *> pipe;
 static int dbNum=0;
 static std::unordered_map<int,DBFile *> dbs;
 static std::vector<RelationalOp *> operators;
-
 struct Node{
     Node *left=NULL,*right=NULL,*parent=NULL;
     CNF *cnf;
@@ -32,48 +32,66 @@ struct Node{
     string dbfilePath;
     virtual void Execute();
     virtual void Print();
+    virtual void wait();
     Node():cnf(new CNF()),literal(new Record()){};
 };
 
 struct SelectFNode:public Node{
+    SelectFile *sf=new SelectFile();
     void Execute() override;
     void Print() override;
+    void wait() override;
 };
 
 
 struct SelectPNode:public Node{
+    SelectPipe *selectPipe = new SelectPipe();
     void Execute() override;
     void Print() override;
+    void wait() override;
 };
 
 struct ProjectNode:public Node{
+    Project *project = new Project();
     void Execute() override;
     void Print() override;
+    void wait() override;
 }; 
 
 struct JoinNode:public Node{
+    Join *join = new Join;
     void Execute() override;
     void Print() override;
+    void wait() override;
 };
 
 struct SumNode:public Node{
+    Sum *sum = new Sum;
     void Execute() override;
     void Print() override;
+    void wait() override;
 };
 
 struct GroupByNode:public Node{
+    GroupBy *groupBy = new GroupBy;
     void Execute() override;
     void Print() override;
+    void wait() override;
 };
 
 struct DistinctNode:public Node{
+    DuplicateRemoval *dr = new DuplicateRemoval;
     void Execute() override;
     void Print() override;
+    void wait() override;
 };
 
 struct WriteOutNode:public Node{
+    WriteOut *wo = new WriteOut();
+    FILE *fp;
     void Execute() override;
     void Print() override;
+    void wait() override;
 };
 
 #endif
