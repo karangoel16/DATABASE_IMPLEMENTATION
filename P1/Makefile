@@ -1,5 +1,4 @@
 CC = g++ -std=c++14 -O2 -Wno-deprecated
-
 tag = -i
 
 ifdef linux

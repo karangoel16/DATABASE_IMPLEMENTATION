@@ -204,7 +204,7 @@ union YYSTYPE
   	struct AttrList *myAttrList;
   	struct InsertFile *myInsertFile;
 	struct Attr *myAttr;
-	
+	struct AndList *final;
  	struct FuncOperand *myOperand;
 	struct FuncOperator *myOperator; 
 	struct TableList *myTables;

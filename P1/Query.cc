@@ -23,10 +23,6 @@ bool Query::DropTable(string catalog,string dir,string name){
 	return true;
 }
 
-static void *Ex(void *pr){
-	Node *root=(Node *)pr;
-	root->Execute();
-}
 vector<AndList*> Query::OptimizeJoinOrder(vector<AndList*> joins) {
 	if(joins.size() <=1 ) {
 		return joins;
@@ -146,8 +142,8 @@ OrderMaker *Query::GenerateOM(Schema *schema) {
 	return order;
 }
 
-std::map<string, AndList *> Query::Selectors(std::vector<AndList *> lists){
-    map<string,AndList *> mp;
+std::unordered_map<string, AndList *> Query::Selectors(std::vector<AndList *> lists){
+    unordered_map<string,AndList *> mp;
     for(auto list:lists){
         AndList *aAndList = list;
 		Operand *op = aAndList->left->left->left;
@@ -191,7 +187,7 @@ Query:: Query(struct FuncOperator *finalFunction,
  				//Need to implement to work joins
  				std::vector<AndList*> joins, selectors, selAboveJoin;
 				JoinsAndSelects(joins,selectors,selAboveJoin);
-                std::map<string,AndList *> select=Selectors(selectors);
+                std::unordered_map<string,AndList *> select=Selectors(selectors);
 				while(list){
 					if(list->aliasAs){
 						s->CopyRel(list->tableName,list->aliasAs);
@@ -202,7 +198,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 				vector<AndList *> orderJoin(std::move(OptimizeJoinOrder(joins)));
 
 // 				//Building the select Node
- 				std::map<string,Node *> selectNode;
+ 				std::unordered_map<string,Node *> selectNode;
  				list=tables;
  				while(list){
  					Node *sel=new SelectFNode();
@@ -239,8 +235,11 @@ Query:: Query(struct FuncOperator *finalFunction,
 					s->ParseRelation(string(left->value), leftRel);
 					s->ParseRelation(string(right->value),rightRel);
 // 					//same for right
- 					Node *leftUpMost =joinNode[leftRel];
- 					Node *rightUpMost=joinNode[rightRel];
+ 					Node *leftUpMost=nullptr,*rightUpMost= nullptr;
+					if(joinNode.count(leftRel))
+						leftUpMost=joinNode[leftRel];
+					if(joinNode.count(rightRel))
+						rightUpMost=joinNode[rightRel];
 					if(!leftUpMost && !rightUpMost){
 						join->left=selectNode[leftRel];
 						join->right=selectNode[rightRel];
@@ -280,7 +279,6 @@ Query:: Query(struct FuncOperator *finalFunction,
 					join->rPipe = join->right->oPipe;
 					join->outputSchema = new Schema(join->left->outputSchema, join->right->outputSchema);
 					join->oPipe = pipeSelect++;	
-					join->cnf=new CNF();
 					join->cnf->GrowFromParseTree(inner, join->left->outputSchema, join->right->outputSchema, *(join->literal));
 				}
  				Node *selAbvJoin=nullptr;
@@ -300,7 +298,6 @@ Query:: Query(struct FuncOperator *finalFunction,
 							andList->rightAnd = *it;
 						}
 					}
-					selAbvJoin->cnf=new CNF();
 					selAbvJoin->cnf->GrowFromParseTree(andList, selAbvJoin->outputSchema, *(selAbvJoin->literal));
 				}
 

@@ -30,11 +30,11 @@ class Query{
 	int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
     Statistics *s;
     int pipeSelect=0;
-    std::map<string, AndList *> Selectors(std::vector<AndList *> list);
+    std::unordered_map<string, AndList *> Selectors(std::vector<AndList *> list);
     void JoinsAndSelects(std::vector<AndList*> &joins, std::vector<AndList*> &selects,std::vector<AndList*> &selAboveJoin); 
     Function *GenerateFunc(Schema *schema);
     OrderMaker *GenerateOM(Schema *schema);
-    map<string, AndList*>OptimizeSelectAndApply(vector<AndList*> selects);
+    std::unordered_map<string, AndList*>OptimizeSelectAndApply(vector<AndList*> selects);
     vector<AndList*> OptimizeJoinOrder(vector<AndList*> joins);
     public:
     Query(){};

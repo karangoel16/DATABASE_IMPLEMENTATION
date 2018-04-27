@@ -34,6 +34,10 @@ struct Node{
     virtual void Print();
     virtual void wait();
     Node():cnf(new CNF()),literal(new Record()){};
+    ~Node(){
+    	delete cnf;
+	    delete literal;
+    }
 };
 
 struct SelectFNode:public Node{
@@ -77,6 +81,9 @@ struct GroupByNode:public Node{
     void Execute() override;
     void Print() override;
     void wait() override;
+    ~GroupByNode(){
+        delete groupBy;
+    }
 };
 
 struct DistinctNode:public Node{
@@ -84,6 +91,9 @@ struct DistinctNode:public Node{
     void Execute() override;
     void Print() override;
     void wait() override;
+    ~DistinctNode(){
+        delete dr;
+    }
 };
 
 struct WriteOutNode:public Node{

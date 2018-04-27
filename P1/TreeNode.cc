@@ -153,12 +153,14 @@ void SelectFNode::Execute(){
 		right->Execute();
 	cout <<"execute selectfrom file: " <<dbfilePath<<endl;
 	Pipe *sfOutPipe = new Pipe(PIPE_SIZE);
-		//add it to the pipe
 	pipe[oPipe] = sfOutPipe;
 	DBFile *db=new DBFile();
 	db->Open((char*)dbfilePath.c_str());
 	sf->Run(*db, *sfOutPipe, *(cnf), *(literal));
-	//operators.push_back(sf);
+	if(left)
+		left->wait();
+	if(right)
+		right->wait();
 }
 
 void SelectFNode::wait(){
@@ -177,6 +179,10 @@ void SelectPNode::Execute(){
 	Pipe *spl = pipe[lPipe];
 	selectPipe->Run(*spl, *spo, *(cnf), *(literal));
 	//operators.push_back(selectPipe);
+	if(left)
+		left->wait();
+	if(right)
+		right->wait();
 }
 void SelectPNode::wait(){
 	selectPipe->WaitUntilDone();
@@ -192,11 +198,11 @@ void ProjectNode::Execute(){
 	//add it to the pipe
 	pipe[oPipe] = pOutPipe;
 	Pipe *plPipe = pipe[lPipe];
-	if(pOutPipe)
-		std::cout<<keepMe[0]<<"YES\n";
-	std::cout<<numAttsInput<<"\n";
-	std::cout<<numAttsOutput<<endl;
 	project->Run(*plPipe, *pOutPipe, keepMe, numAttsInput, numAttsOutput);
+	if(left)
+		left->wait();
+	if(right)
+		right->wait();
 	//operators.push_back(project);
 }
 
@@ -216,6 +222,10 @@ void JoinNode::Execute(){
 	Pipe *jrPipe = pipe[rPipe];
 	join->Run(*jlPipe, *jrPipe, *jOutPipe, *(cnf), *(literal));
 	//operators.push_back(join);
+	if(left)
+		left->wait();
+	if(right)
+		right->wait();
 }
 
 void JoinNode::wait(){
@@ -232,6 +242,10 @@ void SumNode::Execute(){
 	Pipe *slPipe = pipe[lPipe];
 	sum->Run(*slPipe, *sOutPipe, *(function));
 	//operators.push_back(sum);
+	if(left)
+		left->wait();
+	if(right)
+		right->wait();
 }
 
 void SumNode::wait(){
@@ -248,6 +262,10 @@ void GroupByNode::Execute(){
 	pipe[oPipe] = gbOutPipe;
 	Pipe *gblPipe = pipe[lPipe];
 	groupBy->Run(*gblPipe, *gbOutPipe, *(order), *(function));
+	if(left)
+		left->wait();
+	if(right)
+		right->wait();
 	//operators.push_back(groupBy);
 }
 
@@ -265,6 +283,10 @@ void DistinctNode::Execute(){
 	pipe[oPipe] = drOutPipe;
 	Pipe *drlPipe = pipe[lPipe];
 	dr->Run(*drlPipe, *drOutPipe, *(left->outputSchema));
+	if(left)
+		left->wait();
+	if(right)
+		right->wait();
 }
 
 void DistinctNode::wait(){
@@ -282,15 +304,13 @@ void WriteOutNode::Execute(){
 		return ;
 	}
 	Pipe *wlPipe = pipe[lPipe];
-	std::mutex mtx; 
-	mtx.lock();
-	operators.push_back(wo);
-	mtx.unlock();
 	wo->Run(*wlPipe, fp, *(outputSchema));
 	cout <<"total pipe size: " <<pipe.size()<<endl;
-	wait();
-	Record rec;
 	fclose(fp);
+	if(left)
+		left->wait();
+	if(right)
+		right->wait();
 }
 
 void WriteOutNode::wait(){
