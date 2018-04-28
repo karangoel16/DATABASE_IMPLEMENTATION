@@ -117,23 +117,23 @@
 
 SQL: Create
 { 
-	createTable = $1;
 	type='c';
+	createTable = $1;
 }
 | Insert 
 {	
- 	insertFile = $1;
 	type='i';
+ 	insertFile = $1;
 }
 | Drop 
 {
-	dropTableName = $1;
 	type='d';
+	dropTableName = $1;
 }
 | Set 
 {
-	setOutPut = $1;
 	type='s';
+	setOutPut = $1;
 }
 | QUIT ';'
 {	

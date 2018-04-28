@@ -168,6 +168,7 @@ std::unordered_map<string, AndList *> Query::Selectors(std::vector<AndList *> li
     return mp;
 }
 
+
 Query:: Query(struct FuncOperator *finalFunction,
 			struct TableList *tables,
 			struct AndList * boolean,
@@ -371,7 +372,7 @@ Query:: Query(struct FuncOperator *finalFunction,
 				NameList *name = selectAtts;
 				Attribute *outputAtts;
 				int ithAttr = 0;
-				while(name) {  // Getting the output Attr num
+				while(name) { 
 					outputNum++;
 					name = name->next;
 				}
@@ -463,6 +464,7 @@ void Query::PrintQuery(){
 // }
 
 void Query::ExecuteQuery(){
+	mtx.lock();
 	if(root==nullptr){
 		std::cout<<"The tree is null\n";
 		return ;
@@ -475,12 +477,16 @@ void Query::ExecuteQuery(){
 	wr->left = root;
 	wr->lPipe = wr->left->oPipe;
 	wr->outputSchema = wr->left->outputSchema;
-	wr->Print();
+	//wr->Print();
 	wr->Execute();
+	wr->wait();
+	delete wr;
+	mtx.unlock();
 }
 
 
 bool Query::CreateQuery(string catalog_path,string dir,CreateTable *create){
+	mtx.lock();
 	DBFile *db = new DBFile;
 	string temp=dir+string(create->tableName)+".bin";
 	OrderMaker *om = new OrderMaker;
@@ -510,10 +516,13 @@ bool Query::CreateQuery(string catalog_path,string dir,CreateTable *create){
 	} else
 		db->Create(&temp[0u], heap, NULL );
 	db->Close();
+	delete db;
+	mtx.unlock();
 	return 1;
 }
 
 bool Query::InsertQuery(string catalog_path,string dir,string tpch_dir,InsertFile *insert){
+	mtx.lock();
 	DBFile *dbfile=new DBFile();
 	string dbpath=dir+insert->tableName+".bin";
 	dbfile->Open(&dbpath[0u]);
@@ -522,5 +531,7 @@ bool Query::InsertQuery(string catalog_path,string dir,string tpch_dir,InsertFil
 	Schema schema(&catalog_path[0u], insert->tableName);
 	dbfile->Load(schema, &fpath[0u]);
 	dbfile->Close();
+	delete dbfile;
+	mtx.unlock();
 	return 1;
 }

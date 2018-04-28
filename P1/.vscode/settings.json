@@ -35,6 +35,10 @@
         "ratio": "cpp",
         "thread": "cpp",
         "string": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "cstring": "cpp",
+        "optional": "cpp",
+        "string_view": "cpp",
+        "mutex": "cpp"
     }
 }

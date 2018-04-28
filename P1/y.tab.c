@@ -1382,8 +1382,8 @@ yyreduce:
         case 2:
 #line 119 "Parser.y" /* yacc.c:1646  */
     { 
-	createTable = (yyvsp[0].myCreateTable);
 	type='c';
+	createTable = (yyvsp[0].myCreateTable);
 }
 #line 1389 "y.tab.c" /* yacc.c:1646  */
     break;
@@ -1391,8 +1391,8 @@ yyreduce:
   case 3:
 #line 124 "Parser.y" /* yacc.c:1646  */
     {	
- 	insertFile = (yyvsp[0].myInsertFile);
 	type='i';
+ 	insertFile = (yyvsp[0].myInsertFile);
 }
 #line 1398 "y.tab.c" /* yacc.c:1646  */
     break;
@@ -1400,8 +1400,8 @@ yyreduce:
   case 4:
 #line 129 "Parser.y" /* yacc.c:1646  */
     {
-	dropTableName = (yyvsp[0].actualChars);
 	type='d';
+	dropTableName = (yyvsp[0].actualChars);
 }
 #line 1407 "y.tab.c" /* yacc.c:1646  */
     break;
@@ -1409,8 +1409,8 @@ yyreduce:
   case 5:
 #line 134 "Parser.y" /* yacc.c:1646  */
     {
-	setOutPut = (yyvsp[0].actualChars);
 	type='s';
+	setOutPut = (yyvsp[0].actualChars);
 }
 #line 1416 "y.tab.c" /* yacc.c:1646  */
     break;

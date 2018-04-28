@@ -151,7 +151,9 @@ void SelectFNode::Execute(){
 		left->Execute();
 	if(right!=NULL)
 		right->Execute();
-	cout <<"execute selectfrom file: " <<dbfilePath<<endl;
+	#ifdef F_DEBUG
+		cout <<"execute selectfrom file: " <<dbfilePath<<endl;
+	#endif
 	Pipe *sfOutPipe = new Pipe(PIPE_SIZE);
 	pipe[oPipe] = sfOutPipe;
 	DBFile *db=new DBFile();
@@ -193,7 +195,9 @@ void ProjectNode::Execute(){
 		left->Execute();
 	if(right)
 		right->Execute();
-	std::cout<<"In Project Node\n";
+	#ifdef F_DEBUG
+		std::cout<<"In Project Node\n";
+	#endif
 	Pipe *pOutPipe = new Pipe(PIPE_SIZE);
 	//add it to the pipe
 	pipe[oPipe] = pOutPipe;

@@ -14,11 +14,12 @@
 #include "TreeNode.h"
 #include <map>
 #include <cstring>
+#include <mutex>
 struct Node;
 
 
-
 class Query{
+    std::mutex mtx;
     std::vector<RelationalOp *> operators;
     Node *root;//this is the main Node to be used later 
     struct FuncOperator * finalFunction; //function in aggregation
@@ -49,6 +50,15 @@ class Query{
     bool DropTable(string catalog_path,string dir,string name);
     bool CreateQuery(string catalog_path,string dir,CreateTable *create);
     bool InsertQuery(string catalog_path,string dir,string tpch_dir,InsertFile *insert);
+    ~Query(){
+        delete finalFunction;
+        delete tables;
+        delete root;
+        delete cnfAndList;
+        delete groupAtts;
+        delete selectAtts;
+        delete s;
+	    }
 };
 
 #endif

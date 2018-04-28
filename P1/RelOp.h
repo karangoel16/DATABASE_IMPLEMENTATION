@@ -12,6 +12,7 @@
 #include "Defs.h"
 #include <vector>
 #include <thread>
+#include <memory>
 
 using namespace std;
 class RelationalOp {
@@ -20,7 +21,7 @@ class RelationalOp {
 	public:
 	// blocks the caller until the particular relational operator 
 	// has run to completion
-	void WaitUntilDone (){
+	virtual void WaitUntilDone (){
 	}
 
 	// tell us how much internal memory the operation can use
@@ -78,5 +79,6 @@ class WriteOut : public RelationalOp {
 	static void* thread_work(void* arg);
 	public:
 	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema);
+	void WaitUntilDone () override;
 };
 #endif

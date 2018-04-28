@@ -29,9 +29,9 @@ void SelectFile::Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal
 }
 
 void *SelectFile::thread_work(void *args){
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"File Thread started"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
   	struct Param *arg = (struct Param *)(args);                     
   	arg->dbfile->MoveFirst();
   	Record next;
@@ -40,9 +40,9 @@ void *SelectFile::thread_work(void *args){
 		arg->outPipe->Insert(&next);
 	}
 	arg->outPipe->ShutDown();
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"File Thread closed"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
   	return NULL;
 }
 
@@ -59,9 +59,9 @@ void SelectPipe::Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal){
 }
 
 void* SelectPipe::thread_work(void* args){
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Pipe Thread started"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	struct Param *arg = (struct Param *)(args);     
 	ComparisonEngine comp;
 	Record rec;
@@ -69,9 +69,9 @@ void* SelectPipe::thread_work(void* args){
 		if(comp.Compare(&rec,arg->literal,arg->cnf))
 			arg->outPipe->Insert(&rec);
 	arg->outPipe->ShutDown();
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Pipe Thread Closed"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	return NULL;
 }
 
@@ -86,9 +86,9 @@ void Sum::Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
 }
 
 void *Sum::thread_work(void *args){
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"sum Thread started"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	struct Param *arg = (struct Param *)(args);   
 	Record rec;
 	double result=0.0;
@@ -106,9 +106,9 @@ void *Sum::thread_work(void *args){
 	rcd->ComposeRecord(&sum_sch, ss.str().c_str());
 	arg->outPipe->Insert(rcd);
 	arg->outPipe->ShutDown();
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"sum Thread closed"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	return NULL;
 }
 
@@ -124,9 +124,9 @@ void DuplicateRemoval::Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
 
 //Duplicate needs to be done
 void* DuplicateRemoval::thread_work(void* args){
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Duplicate Thread started"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	struct Param *arg = (struct Param *)(args);  
  	OrderMaker sortOrder(arg->mySchema);
   	Pipe sorted(100);
@@ -142,9 +142,9 @@ void* DuplicateRemoval::thread_work(void* args){
     	arg->outPipe->Insert(&cur);
   	}
   	arg->outPipe->ShutDown();
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Duplicate Thread closed"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 }
 
 
@@ -161,9 +161,9 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
  }
 
  void* Project::thread_work(void* args){
-	////#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Project Thread started"<<std::this_thread::get_id()<<endl;
-	////endif
+	#endif
 	//std::cout<<"Inside thread\n";
 	struct Param *arg = (struct Param *)(args);  
 	Record tmpRcd;
@@ -173,9 +173,9 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
 		arg->outPipe->Insert(&tmpRcd);
 	}
 	arg->outPipe->ShutDown();
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Project Thread closed"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	return NULL;
  }
 
@@ -191,9 +191,9 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
 }
 
 void* GroupBy::thread_work(void* args){
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Group By Thread started"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	struct Param *arg = (struct Param *)(args);  
 	Pipe sortPipe(100);
 	BigQ *bigQ = new BigQ(*(arg->inPipe), sortPipe, *(arg->groupAtts), RUNLEN);
@@ -205,14 +205,9 @@ void* GroupBy::thread_work(void* args){
 	Schema *schema = new Schema ((char *)"sum", 1, &attr);
 	int numAttsToKeep = arg->groupAtts->numAtts + 1;
 	int *attsToKeep = new int[numAttsToKeep];
-	attsToKeep[0] = 0; 
-cout <<"[ 0";
+	attsToKeep[0] = 0; 																																																																																																																																															
 	for(int i = 1; i < numAttsToKeep; i++)
-	{
 		attsToKeep[i] =arg->groupAtts->whichAtts[i-1];
-cout <<", "<<attsToKeep[i];
-	}
-cout <<"]"<<endl;
 
 	ComparisonEngine comp;
 	Record *tmpRcd = new Record();
@@ -246,9 +241,9 @@ cout <<"]"<<endl;
 		}
 	}
 	arg->outPipe->ShutDown();
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Group By Thread closed"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	return NULL;
 }
 void WriteOut::Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
@@ -262,9 +257,9 @@ void WriteOut::Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
 }
 
 void* WriteOut::thread_work(void* args){
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Work Thread started"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 		struct Param *arg = (struct Param *)(args); 
 		Attribute *atts = arg->mySchema->GetAtts();
 		int n = arg->mySchema->GetNumAtts();
@@ -297,9 +292,9 @@ void* WriteOut::thread_work(void* args){
 			fprintf(arg->file, "\n");
 			fflush(arg->file);*/
 		}
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Work Thread closed"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 }
 
 void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal){
@@ -315,18 +310,18 @@ void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record 
 }
 
 void* Join::thread_work(void* args){
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Join Thread started"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
 	try{
 		struct Param *arg = (struct Param *)(args); 
 		OrderMaker orderL;
 		OrderMaker orderR;
 		arg->cnf->GetSortOrders(orderL, orderR);
 		if(orderL.numAtts && orderR.numAtts && orderL.numAtts == orderR.numAtts) {
-			Pipe pipeL(100), pipeR(100);
-			BigQ *bigQL = new BigQ(*(arg->inPipe), pipeL, orderL, RUNLEN);
-			BigQ *bigQR = new BigQ(*(arg->inPipe2), pipeR, orderR, RUNLEN);
+			Pipe *pipeL=new Pipe(100), *pipeR=new Pipe(100);
+			BigQ *bigQL = new BigQ(*(arg->inPipe), *pipeL, orderL, RUNLEN);
+			BigQ *bigQR = new BigQ(*(arg->inPipe2), *pipeR, orderR, RUNLEN);
 			vector<Record *> vecL;
 			Record *rcdLeft = new Record();
 
@@ -334,7 +329,7 @@ void* Join::thread_work(void* args){
 			Record *rcdRight = new Record();
 			
 			ComparisonEngine comp;
-			if(pipeL.Remove(rcdLeft) && pipeR.Remove(rcdRight)) {
+			if(pipeL->Remove(rcdLeft) && pipeR->Remove(rcdRight)) {
 				int lAttr = ((int *) rcdLeft->bits)[1] / sizeof(int) -1;
 				int rAttr = ((int *) rcdRight->bits)[1] / sizeof(int) -1;
 				int totAttr = lAttr + rAttr;
@@ -358,7 +353,7 @@ void* Join::thread_work(void* args){
 							rcd2->Consume(rcdRight);
 							vecL.push_back(rcd1);
 							vecR.push_back(rcd2);
-							while(pipeL.Remove(rcdLeft)) {
+							while(pipeL->Remove(rcdLeft)) {
 								if(!comp.Compare(rcdLeft, rcd1, &orderL)) {
 									Record *cLMe = new Record();
 									cLMe->Consume(rcdLeft);
@@ -368,7 +363,7 @@ void* Join::thread_work(void* args){
 									break;
 								}
 							}
-							while(pipeR.Remove(rcdRight)) {
+							while(pipeR->Remove(rcdRight)) {
 								if(!comp.Compare(rcdRight, rcd2, &orderR)) {
 									Record *cRMe = new Record();
 									cRMe->Consume(rcdRight);
@@ -403,12 +398,12 @@ void* Join::thread_work(void* args){
 					}
 					case 1:
 						leftOK = true;
-						if(pipeR.Remove(rcdRight))
+						if(pipeR->Remove(rcdRight))
 							rightOK = true;
 						break;
 					case -1:
 						rightOK = true;
-						if(pipeL.Remove(rcdLeft))
+						if(pipeL->Remove(rcdLeft))
 							leftOK = true;
 						break;
 					}
@@ -497,7 +492,11 @@ void* Join::thread_work(void* args){
 	catch(std::exception e){
 		std::cout<<"Exception in Join Thread\n";
 	}
-	//#ifdef F_DEBUG
+	#ifdef F_DEBUG
 		std::cout<<"Join Thread Closed"<<std::this_thread::get_id()<<endl;
-	//endif
+	#endif
+ }
+
+ void WriteOut::WaitUntilDone(){
+	 pthread_join(worker,NULL);
  }

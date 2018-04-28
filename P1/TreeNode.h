@@ -36,6 +36,7 @@ struct Node{
     Node():cnf(new CNF()),literal(new Record()){};
     ~Node(){
     	delete cnf;
+        delete right;
 	    delete literal;
     }
 };
