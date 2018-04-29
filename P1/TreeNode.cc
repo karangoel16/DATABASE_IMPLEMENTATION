@@ -309,7 +309,7 @@ void WriteOutNode::Execute(){
 	}
 	Pipe *wlPipe = pipe[lPipe];
 	wo->Run(*wlPipe, fp, *(outputSchema));
-	cout <<"total pipe size: " <<pipe.size()<<endl;
+	//cout <<"total pipe size: " <<pipe.size()<<endl;
 	fclose(fp);
 	if(left)
 		left->wait();

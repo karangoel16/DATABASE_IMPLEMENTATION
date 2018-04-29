@@ -39,7 +39,6 @@ int main () {
 	typedef std::chrono::high_resolution_clock Time;
     typedef std::chrono::milliseconds ms;
     typedef std::chrono::duration<float> fsec;
-	while(1){
 		std::cout<<"***************************************************\n";
 		std::cout<<"Type the following commands"<<endl;
 		std::cout<<"CREATE TABLE"<<endl;
@@ -57,17 +56,24 @@ int main () {
 		if(quit)
 		{
 			mtx.unlock();
-			return 1;
+			return 0;
 		}
-		if(type=='c'){
+		else if(type=='c'){
 
 			Query *q=new Query();
 			if(q->CreateQuery(catalog_path,dbfile_dir,createTable)) {
 				cout <<"Created table"<<createTable->tableName<<endl;
+			}
 			delete q;
 			type='z';
 		}
-		}else if(type=='i') {
+		else if(type=='s'){
+			//std::cout<<"Hello\n";
+			ofstream ifs(string(dbfile_dir)+"data");
+			ifs<<setOutPut;
+			ifs.close();
+		}
+		else if(type=='i') {
 			Query *q=new Query();
 			std::cout<<insertFile->tableName<<"\n";
 			if(q->InsertQuery(catalog_path,dbfile_dir,tpch_dir,insertFile))
@@ -98,12 +104,9 @@ int main () {
 		auto t1 = Time::now();
 		fsec fs = t1 - t0;
     	ms d = std::chrono::duration_cast<ms>(fs);
-    	std::cout << fs.count() << "s\n";
-    	std::cout << d.count() << "ms\n";
-		yylex_destroy();
-		//close_lexical_parser ();
-	}
+    	std::cout << "Duration of the Query: " << fs.count() << "s\n";
 	cleanup();
+	return 1;
 }	
 
 
