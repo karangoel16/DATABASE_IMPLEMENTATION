@@ -65,6 +65,7 @@ int main () {
 			if(q->CreateQuery(catalog_path,dbfile_dir,createTable)) {
 				cout <<"Created table"<<createTable->tableName<<endl;
 			delete q;
+			type='z';
 		}
 		}else if(type=='i') {
 			Query *q=new Query();
@@ -72,6 +73,7 @@ int main () {
 			if(q->InsertQuery(catalog_path,dbfile_dir,tpch_dir,insertFile))
 				cout <<"Loaded file "<<insertFile->fileName<<" into " <<insertFile->tableName<<endl;
 			delete q;
+			type='z';
 		}
 		else if(type=='d'){
 			Query *q=new Query();
@@ -82,13 +84,15 @@ int main () {
 				std::cerr<<"Table cannot be deleted"<<endl;
 			}
 			delete q;
+			type='z';
 		}
-		else{
+		else if(type=='q'){
 			Statistics * s=new Statistics();
 			s->LoadAllStatistics();
 			Query *q=new Query(finalFunction,tables,boolean,groupingAtts,attsToSelect,distinctAtts,distinctFunc,s,std::string(dbfile_dir),string(tpch_dir),string(catalog_path));
 			q->ExecuteQuery();
 			delete q;
+			type='z';
 		}
 		mtx.unlock();
 		auto t1 = Time::now();

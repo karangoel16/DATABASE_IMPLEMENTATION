@@ -217,6 +217,7 @@ Set: SET OUTPUT String ';'
 
 Query: SELECT WhatIWant FROM Tables WHERE AndList 
 {
+	type='q';
 	tables = $4;
 	boolean = $6;	
 	groupingAtts = NULL;
@@ -224,6 +225,7 @@ Query: SELECT WhatIWant FROM Tables WHERE AndList
 
 | SELECT WhatIWant FROM Tables WHERE AndList GROUP BY Atts 
 {
+	type='q';
 	tables = $4;
 	boolean = $6;	
 	groupingAtts = $9;
