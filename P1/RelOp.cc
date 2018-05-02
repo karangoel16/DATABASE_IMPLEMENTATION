@@ -266,32 +266,40 @@ void* WriteOut::thread_work(void* args){
 		Record rec;
 		int cnt=1;
 		while(arg->inPipe->Remove(&rec)){
-			std::cout<<"Write Out "<<cnt<<"\n";
-			rec.Print(arg->mySchema);
-			/*fprintf(arg->file, "%d: ", cnt++);
-			char *bits = rec.bits;
-			for (int i = 0; i < n; i++) {
-				fprintf(arg->file, "%s",atts[i].name);
-				int pointer = ((int *) bits)[i + 1];
-				fprintf(arg->file, "[");
-				if (atts[i].myType == Int) {
-					int *myInt = (int *) &(bits[pointer]);
-					fprintf(arg->file, "%d",*myInt);
-				} else if (atts[i].myType == Double) {
-					double *myDouble = (double *) &(bits[pointer]);
-					fprintf(arg->file, "%f", *myDouble);
-				} else if (atts[i].myType == String) {
-					char *myString = (char *) &(bits[pointer]);
-					fprintf(arg->file, "%s", myString);
-				}
-				fprintf(arg->file, "]");
-				if (i != n - 1) {
-					fprintf(arg->file, ", ");
-				}
+			if(!(arg->file))
+			{	
+				std::cout<<"Write Out "<<cnt++<<"\n";
+				rec.Print(arg->mySchema);
 			}
-			fprintf(arg->file, "\n");
-			fflush(arg->file);*/
+			else{
+				//std::fstream fstr(arg->file);
+				fprintf(arg->file, "%d: ", cnt++);
+				char *bits = rec.bits;
+				for (int i = 0; i < n; i++) {
+					fprintf(arg->file, "%s",atts[i].name);
+					int pointer = ((int *) bits)[i + 1];
+					fprintf(arg->file, "[");
+					if (atts[i].myType == Int) {
+						int *myInt = (int *) &(bits[pointer]);
+						fprintf(arg->file, "%d",*myInt);
+					} else if (atts[i].myType == Double) {
+						double *myDouble = (double *) &(bits[pointer]);
+						fprintf(arg->file, "%f", *myDouble);
+					} else if (atts[i].myType == String) {
+						char *myString = (char *) &(bits[pointer]);
+						fprintf(arg->file, "%s", myString);
+					}
+					fprintf(arg->file, "]");
+					if (i != n - 1) {
+						fprintf(arg->file, ", ");
+					}
+				}
+				fprintf(arg->file, "\n");
+				//fflush(arg->file);
+			}
 		}
+		if(arg->file)
+			fclose(arg->file);
 	#ifdef F_DEBUG
 		std::cout<<"Work Thread closed"<<std::this_thread::get_id()<<endl;
 	#endif

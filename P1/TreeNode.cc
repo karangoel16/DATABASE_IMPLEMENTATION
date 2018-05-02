@@ -302,15 +302,26 @@ void WriteOutNode::Execute(){
 		left->Execute();
 	if(right)
 		right->Execute();
-	fp=fopen("hello.txt","w");
-	if(!fp){
-		std::cout<<"FILE CAN'T BE OPEN\n";
+	std::fstream str("data");
+	if(!str){
+		Print();
 		return ;
+	}
+	string choice;
+	str>>choice;
+	if(choice=="NONE"){
+		Print();
+		return;
+	}
+	if(choice=="STDOUT"){
+		fp=nullptr;
+	}
+	else{
+		fp=fopen(choice.c_str(),"w");
 	}
 	Pipe *wlPipe = pipe[lPipe];
 	wo->Run(*wlPipe, fp, *(outputSchema));
 	//cout <<"total pipe size: " <<pipe.size()<<endl;
-	fclose(fp);
 	if(left)
 		left->wait();
 	if(right)

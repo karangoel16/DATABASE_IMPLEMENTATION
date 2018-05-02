@@ -13,6 +13,7 @@
 #include <vector>
 #include <thread>
 #include <memory>
+#include <fstream>
 
 using namespace std;
 class RelationalOp {
