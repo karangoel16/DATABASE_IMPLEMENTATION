@@ -51,12 +51,12 @@ extern int yydebug;
     String = 261,
     CREATE = 262,
     TABLE = 263,
-    TKHEAP = 264,
-    TKSORTED = 265,
+    TOKENHEAP = 264,
+    TOKENSORTED = 265,
     ON = 266,
-    TKINTEGER = 267,
-    TKDOUBLE = 268,
-    TKSTRING = 269,
+    TOKENINTEGER = 267,
+    TOKENDOUBLE = 268,
+    TOKENSTRING = 269,
     INSERT = 270,
     INTO = 271,
     DROP = 272,
@@ -82,12 +82,12 @@ extern int yydebug;
 #define String 261
 #define CREATE 262
 #define TABLE 263
-#define TKHEAP 264
-#define TKSORTED 265
+#define TOKENHEAP 264
+#define TOKENSORTED 265
 #define ON 266
-#define TKINTEGER 267
-#define TKDOUBLE 268
-#define TKSTRING 269
+#define TOKENINTEGER 267
+#define TOKENDOUBLE 268
+#define TOKENSTRING 269
 #define INSERT 270
 #define INTO 271
 #define DROP 272

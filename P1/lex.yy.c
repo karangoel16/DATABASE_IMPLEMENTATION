@@ -876,27 +876,27 @@ return (TABLE);
 case 3:
 YY_RULE_SETUP
 #line 44 "Lexer.l"
-return (TKINTEGER);
+return (TOKENINTEGER);
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 46 "Lexer.l"
-return (TKDOUBLE);
+return (TOKENDOUBLE);
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 48 "Lexer.l"
-return (TKSTRING);
+return (TOKENSTRING);
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 50 "Lexer.l"
-return (TKHEAP);
+return (TOKENHEAP);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 52 "Lexer.l"
-return (TKSORTED);
+return (TOKENSORTED);
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
