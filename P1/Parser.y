@@ -61,12 +61,12 @@
 
 %token CREATE
 %token TABLE
-%token TKHEAP
-%token TKSORTED 
+%token TOKENHEAP
+%token TOKENSORTED 
 %token ON
-%token TKINTEGER
-%token TKDOUBLE
-%token TKSTRING
+%token TOKENINTEGER
+%token TOKENDOUBLE
+%token TOKENSTRING
 %token INSERT
 %token INTO
 %token DROP
@@ -142,7 +142,7 @@ SQL: Create
 | Query
 ;
 
-Create: CREATE TABLE Name '(' AttrList ')' AS TKHEAP ';'
+Create: CREATE TABLE Name '(' AttrList ')' AS TOKENHEAP ';'
 {
 	$$ = (struct CreateTable *) malloc (sizeof (struct CreateTable));
 	$$->tableName = $3;
@@ -151,7 +151,7 @@ Create: CREATE TABLE Name '(' AttrList ')' AS TKHEAP ';'
 	$$->sortAttrList = NULL;
 }
 
-|  CREATE TABLE Name '(' AttrList ')' AS TKSORTED ON Atts ';'
+|  CREATE TABLE Name '(' AttrList ')' AS TOKENSORTED ON Atts ';'
 {
 	$$ = (struct CreateTable *) malloc (sizeof (struct CreateTable));
 	$$->tableName = $3;
@@ -174,19 +174,19 @@ AttrList: Attr
 	$$->next = $3;
 };
 
-Attr: Name TKINTEGER
+Attr: Name TOKENINTEGER
 {
 	$$ = (struct Attr *) malloc (sizeof (struct Attr));
 	$$->attrName = $1;
 	$$->type = INT;
 }
-| Name TKDOUBLE
+| Name TOKENDOUBLE
 {
 	$$ = (struct Attr *) malloc (sizeof (struct Attr));
 	$$->attrName = $1;
 	$$->type = DOUBLE;
 }
-| Name TKSTRING
+| Name TOKENSTRING
 {
 	$$ = (struct Attr *) malloc (sizeof (struct Attr));
 	$$->attrName = $1;
