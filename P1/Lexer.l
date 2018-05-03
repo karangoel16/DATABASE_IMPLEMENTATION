@@ -41,15 +41,15 @@ void close_lexical_parser () { yy_delete_buffer (yylex_buf_state); }
 
 "TABLE"			return (TABLE);
 
-"INTEGER"		return (TKINTEGER);
+"INTEGER"		return (TOKENINTEGER);
 
-"DOUBLE" 		return (TKDOUBLE);
+"DOUBLE" 		return (TOKENDOUBLE);
 
-"STRING"		return (TKSTRING);
+"STRING"		return (TOKENSTRING);
 
-"HEAP"			return (TKHEAP);
+"HEAP"			return (TOKENHEAP);
 
-"SORTED"		return (TKSORTED);
+"SORTED"		return (TOKENSORTED);
 
 "ON"			return (ON);
 
